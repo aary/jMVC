@@ -1,7 +1,7 @@
 /*
- * OVERVIEW : A Fragment controller class
+ * OVERVIEW : A Activity controller class
  */
-function Fragment(id, fragmentLink, currentPublicState) {
+function Activity(id, fragmentLink, currentPublicState) {
     // Display and hide its views in html using the id
     this.id = id;
     this.hashLink = fragmentLink;
@@ -19,7 +19,7 @@ function Fragment(id, fragmentLink, currentPublicState) {
             currentPublicState);
 }
 
-Fragment.prototype = {
+Activity.prototype = {
     /*
      * Lifecycle methods
      * onDisplay() is called before the fragment is about to be displayed on the screen
@@ -29,17 +29,17 @@ Fragment.prototype = {
     onHide      : function() { },
 
     /*
-     * EFFECTS : Returns true if the fragment is hidden
+     * Returns true if the fragment is hidden
      */
     isHidden    : function() { return isHidden; },
 
     /*
-     * EFFECTS : Overridable function to create a new fragment with arguments
+     * Overridable function to create a new fragment with arguments
      */
     newInstance : function() { },
 
     /*
-     * EFFECTS : Hides this fragment
+     * Hides this fragment
      */
     hide : function(millisecondsToFadeOut) {
         // Call callbacks
@@ -54,8 +54,8 @@ Fragment.prototype = {
     },
 
     /*
-     * EFFECTS : Brings the fragment into display, sets the hashbang link to be the
-     *           fragment identifier
+     * Brings the fragment into display, sets the hashbang link to be the
+     * fragment identifier
      */
     show : function(millisecondsToFadeIn) {
         // Call callbacks
@@ -73,8 +73,8 @@ Fragment.prototype = {
     }, 
 
     /*
-     * EFFECTS : Sets the currentPublicState of the fragment using the data in the 
-     *           url
+     * Sets the currentPublicState of the fragment using the data in the
+     * url
      */
     getCurrentPublicState : function() {
         try {
@@ -88,8 +88,8 @@ Fragment.prototype = {
     },
 
     /*
-     * EFFECTS : Sets the url to contain th stringified version of the 
-     *           currentPublicState
+     * Sets the url to contain th stringified version of the
+     * currentPublicState
      */
     setCurrentPublicState : function(currentPublicStateIn) {
         this.currentPublicState = currentPublicStateIn;
@@ -97,7 +97,7 @@ Fragment.prototype = {
     },
     
     /*
-     * EFFECTS : Constructs a hash link for the current fragment
+     * Constructs a hash link for the current fragment
      */
     makeHashLink : function() {
         return this.hashLink + '/' + JSON.stringify(this.currentPublicState);

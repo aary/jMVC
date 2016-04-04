@@ -4,6 +4,9 @@ function Router(hashUrl) {
     this.hashLink = DEFAULT_HASH_LINK;
     this.urlData = {};
 
+    // The hashLink-function callbacks
+    this.routes = {};
+
     // If there is no hash in the link then redirect to default page
     if (hashUrl === '') {
         this.hashLink = DEFAULT_HASH_LINK;
@@ -31,16 +34,16 @@ function Router(hashUrl) {
     console.log("urlData is " + JSON.stringify(this.urlData));
 
 
-    // The hashLink-function callbacks
-    this.routes = {};
 }
 Router.prototype = {
+    DEFAULT_HASH_LINK : '__default',
+
     setRoutes : function(hashLinkToCallbacks) {
         this.routes = hashLinkToCallbacks;
     },
 
-    routeToFragment : function() {
-        if (this.routes[hashLink]) {
+    routeToActivity : function() {
+        if (this.routes[this.hashLink]) {
             this.routes[this.hashLink](this.urlData);
         } else {
             this.routes['__default'](this.urlData);
