@@ -18,7 +18,6 @@ MainActivity.prototype.wire_up_widgets = function() {
     this.button_finish = $("#home_controller_button_finish");
 
     this.button.click(function() {
-        alert("Clicked button");
         NProgress.configure({ showSpinner: true });
         NProgress.start();
         NProgress.inc(0.2);

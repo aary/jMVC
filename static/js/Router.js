@@ -8,60 +8,20 @@ function Router() {
     this.public_activities = {};
     this.private_activities = {};
 
-    /*
-     * A pointer to the current activity that is on the screen
-     */
+    /* A pointer to the current activity that is on the screen */
     this.current_activity = undefined;
+
+    /* add the progress bar to the body */
+    this.add_progress_bar_to_body();
 }
 
 Router.prototype = {
 
-    /*
-     * This function does no checking whatsoever and simply displays the given
-     * activity id on the screen.  It looks first in the public activities
-     * section and then looks in the private activities section for the given
-     * activity
+    /* 
+     * Parses the url in the browser and routes to that activity, if the url
+     * is invalid or if the activity is private then this falls back to the
+     * default activity.
      */
-    route_to : function(activity_id_in) {
-        
-        if (activity_id_in in this.public_activities) {
-            this.current_activity = this.public_activities[activity_id_in];
-            this.public_activities[activity_id_in].show();
-        } else if (activity_id_in in this.private_activities) {
-            this.current_activity = this.private_activities[activity_id_in];
-            this.private_activities[activity_id_in].show();
-        }
-    },
-
-    /*
-     * This function is used to swap between two activities, it calls the
-     * activity::hide() method and then calls the show() method on the other
-     * activity
-     */
-    switch_to : function(activity_id_in) {
-
-        // TODO : Assert that there is an activity called activity_id_in
-        
-        if (activity_id_in in this.public_activities) {
-            this.current_activity.hide();
-            this.route_to(activity_id_in);
-        } else if (activity_id_in in this.private_activities) {
-            this.current_activity.hide();
-            this.route_to(activity_id_in);
-        }
-    },
-
-    /*
-     * The default activity is the first in the public_activities list
-     */
-    route_to_default_activity : function() {
-
-        // TODO Add assert to check that there is a default public activity
-        
-        // route to the appropriate default activity
-        this.route_to(Object.keys(this.public_activities)[0]);
-    },
-
     route_to_current_activity : function() {
         hash_url = window.location.hash;
         
@@ -87,9 +47,6 @@ Router.prototype = {
             }
         }
 
-        console.log("current_activity_id_from_hash is " + 
-                current_activity_id_from_hash);
-        
         // route to the activity gotten from the hash url, if no public
         // activity exists with the given id then this goes straight to the
         // default public activity
@@ -97,8 +54,99 @@ Router.prototype = {
     },
 
     /*
-     * Route to function, this simply displays the activity on the screen,
-     * does nothing else
+     * This function is used to swap between two activities, it calls the
+     * activity::hide() method and then calls the show() method on the other
+     * activity.
+     */
+    switch_to : function(activity_id_in) {
+
+        // Assert that there is an activity called activity_id_in
+        assert(activity_id_in in this.public_activities || 
+                activity_id_in in this.private_activities, 
+                "Cannot call switch_to() to an activity that does not exist");
+        
+        if (activity_id_in in this.public_activities) {
+            this.current_activity.hide();
+            this.route_to(activity_id_in);
+        } else if (activity_id_in in this.private_activities) {
+            this.current_activity.hide();
+            this.route_to(activity_id_in);
+        }
+    },
+
+    /* 
+     * Setter for the public activities, give this a dictionary with activity
+     * ids that map to the appropriate activity object
+     */
+    set_public_activities : function(public_activities_in) {
+        this.public_activities = public_activities_in
+    },
+
+    /* 
+     * Setter for the private activities, give this a dictionary with activity
+     * ids that map to the appropriate activity object
+     */
+    set_private_activities : function(private_activities_in) {
+        this.private_activities = private_activities_in;
+    },
+
+    /* 
+     * Adds a progress bar to the body, this should be removed as soon as
+     * the views for an activity are displayed on screen with the
+     * remove_progress_bar function
+     */
+    add_progress_bar_to_body : function() {
+        $('body').append('<div style="height:100%;" class="container" \
+                id="progress_bar"><div class="progress" \
+                style="margin-top:0%;"><div class="progress-bar" \
+                id="inner_progress_bar" \
+                role="progressbar" aria-valuenow="70" aria-valuemin="0" \
+                aria-valuemax="100" style="width:10%"></div></div></div>');
+
+        // increase progress periodically
+        this.current_progress = 10;
+        this.progress_bar_interval_id = setInterval(function() {
+
+            this.current_progress = 
+                (this.current_progress >= 80) ? 
+                (85) : 
+                this.current_progress + 2;
+            $("#inner_progress_bar").css("width", 
+                (this.current_progress).toString() + "%");
+        }.bind(this), 50);
+        console.log("added progress bar");
+    },
+    remove_progress_bar : function() {
+        // clear the interval and remove the div
+        clearInterval(this.progress_bar_interval_id);
+        $("#progress_bar").css("display", "none");
+    },
+
+
+    /**************************************************************************
+     *                          PRIVATE METHODS                               *
+     **************************************************************************/
+    /*
+     * This function does no checking whatsoever and simply displays the given
+     * activity id on the screen.  It looks first in the public activities
+     * section and then looks in the private activities section for the given
+     * activity
+     */
+    route_to : function(activity_id_in) {
+        
+        if (activity_id_in in this.public_activities) {
+            this.current_activity = this.public_activities[activity_id_in];
+            this.public_activities[activity_id_in].show();
+        } else if (activity_id_in in this.private_activities) {
+            this.current_activity = this.private_activities[activity_id_in];
+            this.private_activities[activity_id_in].show();
+        }
+    },
+
+    /*
+     * Routes to the public activity given, if none exists with the specified
+     * id then this routes to the default activity by calling
+     * route_to_default_activity()
      */
     route_to_public : function(activity_id_in) {
 
@@ -111,13 +159,14 @@ Router.prototype = {
         }
     },
 
-    set_public_activities : function(public_activities_in) {
-        this.public_activities = public_activities_in
-    },
+    /* The default activity is the first in the public_activities list */
+    route_to_default_activity : function() {
 
-    set_private_activities : function(private_activities_in) {
-        this.private_activities = private_activities_in;
+        // TODO Add assert to check that there is a default public activity
+        assert(this.public_activities.length);
+        
+        // route to the appropriate default activity
+        this.route_to(Object.keys(this.public_activities)[0]);
     }
-
 };
     

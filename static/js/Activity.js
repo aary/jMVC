@@ -3,17 +3,16 @@ FADE_MS = 500;
 function Activity(id_in, router_in) {
 
     /*
-     * set the public ID for the current activity, this should correspond
+     * Set the public ID for the current activity, this should correspond
      * exactly to the id tag of the div that contains the controller's
      * frontend in the html
-     * TODO Add assert that checks for the presence of the specified id in the
-     *      html
      */
     this.id = id_in;
+    if (this.id) {
+        assert($("#" + this.id).length, "Id assigned to activity must exist");
+    }
 
-    /*
-     * Store the router as an instance here
-     */
+    /* Store the router as an instance here */
     this.router = router_in;
 
     /*
@@ -22,10 +21,7 @@ function Activity(id_in, router_in) {
      */
     this.public_state = {};
 
-    /*
-     * this is the private state of the activity.  This is entirely maintained
-     * by the activity internally. 
-     */
+    /* This is the private state of the activity. */
     this.private_state = {};
 
     /* Get a default ajax requester for this activity */
@@ -96,6 +92,8 @@ Activity.prototype = {
      */
     show_views : function() {
         
+        // remove the preliminary status bar
+        this.router.remove_progress_bar();
         $('#' + this.id).fadeIn(FADE_MS);
     },
 
@@ -126,21 +124,6 @@ Activity.prototype = {
         var compiled_html = the_template(context);
         $(placeholder).html(compiled_html);
     },
-
-    make_post_request_to_url : function(url_in, data, callback) {
-        
-        // make post request
-        $.ajax({
-            type: "POST", url: url_in,
-            contentType: "application/json", dataType: "JSON", 
-            data: JSON.stringify(data),
-
-            success: function(data) {
-                callback();
-            }
-        });
-    },
-
 
 
     /**************************************************************************
