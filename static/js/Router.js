@@ -1,3 +1,12 @@
+/*
+ *      Router.js
+ *
+ * This module contains the code that is supposed to go in the script.js file.
+ * Switching between activities should also be done via calls to Router
+ * methods (in most cases the Router.prototype.switch_to() method works for
+ * this purpose
+ */
+
 function Router() {
     
     /*
@@ -108,13 +117,12 @@ Router.prototype = {
         this.progress_bar_interval_id = setInterval(function() {
 
             this.current_progress = 
-                (this.current_progress >= 80) ? 
-                (85) : 
-                this.current_progress + 2;
+                (this.current_progress >= 94) ? 
+                (94) : 
+                this.current_progress + 12;
             $("#inner_progress_bar").css("width", 
                 (this.current_progress).toString() + "%");
-        }.bind(this), 50);
-        console.log("added progress bar");
+        }.bind(this), 300);
     },
     remove_progress_bar : function() {
         // clear the interval and remove the div
@@ -168,5 +176,8 @@ Router.prototype = {
         // route to the appropriate default activity
         this.route_to(Object.keys(this.public_activities)[0]);
     }
+    /**************************************************************************
+     *                          PRIVATE METHODS                               *
+     **************************************************************************/
 };
     

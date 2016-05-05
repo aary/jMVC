@@ -1,3 +1,11 @@
+/*
+ *      Activity.js
+ *
+ * This module contains the code for an activity.  An Activity is modeled off
+ * of the Android activity class.  An activity is the current state of the app
+ * on the browser screen.  Only one activity is to stay on screen at a time.
+ */
+
 FADE_MS = 500;
 
 function Activity(id_in, router_in) {
@@ -21,140 +29,152 @@ function Activity(id_in, router_in) {
      */
     this.public_state = {};
 
-    /* This is the private state of the activity. */
+    /* This is the private state of the activity.  Store all data here. */
     this.private_state = {};
 
     /* Get a default ajax requester for this activity */
     this.ajax_requester = new AjaxRequester();
 }
 
-Activity.prototype = {
-    /*
-     * Lifecycle methods
-     * on_show() is called after the activity has been put on the screen, any
-     * and all ajax motives you have should be done here.  The page should be
-     * shown completely on the screen with a callback here that calls the
-     * Activity::redraw function to lay out any templates (for example
-     * Handlebar templates that you might have)
-     *
-     * on_hide() is called before the activity disappears from sight.
-     * Overload these with the code you want to execute before the screen is
-     * filled with the html for the current activity
-     */
-    on_show   : function(optional_data) { },
-    on_hide   : function() { },
+/*
+ *      Lifecycle methods
+ *
+ * on_show() is called after the activity has been put on the screen, any
+ * and all ajax motives you have should be done here.  The page should be
+ * shown completely on the screen with a callback here that calls the
+ * Activity::redraw function to lay out any templates (for example
+ * Handlebar templates that you might have)
+ *
+ * on_hide() is called before the activity disappears from sight.  Browser
+ * specific things like storing data in cookies for further use should be done
+ * here.
+ *
+ * When on_show is called with private_state_in, that indicates that some of
+ * the AJAX calls have been done for you and the data is the result of those
+ * calls, so be sure to multiplex your network calls based on that.
+ */
+Activity.prototype.on_show = function(private_state_in) { };
+Activity.prototype.on_hide = function() { };
 
-    /*
-     * Use this to hide the activity from sight
-     */
-    hide : function(milli_seconds_to_fade_out) {
-
-        console.log("Activity::hide()");
-
-        // Call callbacks
-        this.on_hide();
-
-        // Hide views from screen
-        if (typeof milli_seconds_to_fade_out === 'undefined') {
-            $('#' + this.id).hide();
-        } else {
-            $('#' + this.id).fadeOut(milli_seconds_to_fade_out);
-        }
-    },
-
-    /*
-     * Use this function to show the views for this activity on the screen,
-     * the optional_data parameter can be used to pass in data to this
-     * activity.  
-     */
-    show : function(optional_data) {
-        
-        // get the public state from the browser and set back the state of the
-        // browser to match the state of the activity.  This is done here even
-        // after getting the state from the browser for the case when the
-        // default public state is not even provided when the activity's show
-        // function is called
-        this.public_state = this.get_state_from_browser_link();
-        this.reflect_change_in_state_for_activity();
-
-        // call the appropriate callback that the deriver can change to suit
-        // his AJAX-ridden motives, if he returns a string they want to switch
-        // to then switch and dont show the views for this screen
-        // NEED TO CALL show_views() to show things
-        this.on_show(optional_data)
-    },
-
-    /*
-     * Used to show the views on the screen, if called with a null parameter
-     * or no parameter at all then this does not fade the views in.  Otherwise
-     * the parameter should be the number of milliseconds the fading in of the
-     * views should take.
-     */
-    show_views : function() {
-        
-        // remove the preliminary status bar
-        this.router.remove_progress_bar();
-        $('#' + this.id).fadeIn(FADE_MS);
-    },
-
-    /*
-     * used to redraw the screen.  All code that is used for this purpose has
-     * to go in here
-     */
-    redraw : function() {},
-
-    /*
-     * A utility function that can be used to redraw the handlebar template
-     * with the given id and put the resulting html in the given placeholder
-     * with the given context
-     */
-    redraw_handlebar_template_with_context : function(template,
-            placeholder, context) {
-
-        // print useful debugging information to the console
-        console.log("Compiling handlebar template with the id " + 
-                template + "... With context .. ");
-        console.log(context);
-        console.log("Trying to put this resulting html at placeholder " 
-                + placeholder);
-
-        // execute the 4 necessary steps
-        var the_template_script = $(template).html(); 
-        var the_template = Handlebars.compile(the_template_script);
-        var compiled_html = the_template(context);
-        $(placeholder).html(compiled_html);
-    },
-
-
-    /**************************************************************************
-     * PRIVATES
-    /*************************************************************************/
-    get_state_from_browser_link : function() {
-
-        // parse out the current state from the browser
-        try {
-            return JSON.parse(JSON.parse(window.location.hash
-                        .split('#' + this.hashLink + '/')[1].trim()));
-        } catch (err) {
-            return {};
-        }
-    },
-
-    reflect_change_in_state_for_activity : function() {
-
-        // this does not need a pound sign ('#') to be in the rvalue string,
-        // the pound sign is added automatically
-        window.location.hash = this.construct_state_for_browser_url();
-    },
-
-    construct_state_for_browser_url : function() {
-        
-        // concatenate the id for the activity with the public state and
-        // return
-        return this.id + '/' + JSON.stringify(this.public_state);
-    }
-    /**************************************************************************
-     * PRIVATES
-    /*************************************************************************/
+/*
+ * Used to show the views on the screen, if called with a null parameter
+ * or no parameter at all then this does not fade the views in.  Otherwise
+ * the parameter should be the number of milliseconds the fading in of the
+ * views should take.
+ *
+ * This should be the final thing that is called in the loading process for an
+ * activity.  For example if you are loading data via AJAX calls, you would
+ * wait for that data to be fetched and then you would render any templates
+ * you may have with the redraw_handlebar_template_with_context() function.
+ * After that this function should be called to show all of the views for the
+ * activity on the screen.
+ */
+Activity.prototype.show_views = function() {
+    
+    // remove the preliminary status bar
+    this.router.remove_progress_bar();
+    $('#' + this.id).fadeIn(FADE_MS);
 };
 
+/*
+ * Used to redraw the screen.  All code that is used for this purpose has
+ * to go in here.  The suggested use for an activity is to call this after all
+ * the data for the activity has been loaded.  Most of the time you would put
+ * a call to redraw_handlebar_template_with_context() in this function.
+ *
+ * This is not called by the library, you are in charge of calling this.  This
+ * function has been put here simply as a style guideline.
+ */
+Activity.prototype.redraw = function() {};
+
+/*
+ * A utility function that can be used to redraw the handlebar template
+ * with the given id and put the resulting html in the given placeholder
+ * with the given context
+ */
+Activity.prototype.redraw_handlebar_template_with_context = function(template,
+        placeholder, context) {
+
+    // print useful debugging information to the console
+    console.log("Compiling handlebar template with the id " + 
+            template + "... With context .. ");
+    console.log(context);
+    console.log("Trying to put this resulting html at placeholder " 
+            + placeholder);
+
+    // execute the 4 necessary steps
+    var the_template_script = $(template).html(); 
+    var the_template = Handlebars.compile(the_template_script);
+    var compiled_html = the_template(context);
+    $(placeholder).html(compiled_html);
+};
+
+
+/**************************************************************************
+ * PRIVATES
+/*************************************************************************/
+/* Use this to hide the activity from sight */
+Activity.prototype.hide = function(milli_seconds_to_fade_out) {
+
+    console.log("Activity::hide()");
+
+    // Call callbacks
+    this.on_hide();
+
+    // Hide views from screen
+    if (typeof milli_seconds_to_fade_out === 'undefined') {
+        $('#' + this.id).hide();
+    } else {
+        $('#' + this.id).fadeOut(milli_seconds_to_fade_out);
+    }
+};
+
+/*
+ * Use this function to show the views for this activity on the screen,
+ * the private_state_in parameter can be used to pass in data to this
+ * activity.
+ */
+Activity.prototype.show = function(private_state_in) {
+    
+    // get the public state from the browser and set back the state of the
+    // browser to match the state of the activity.  This is done here even
+    // after getting the state from the browser for the case when the
+    // default public state is not even provided when the activity's show
+    // function is called
+    this.public_state = this.get_state_from_browser_link();
+    this.reflect_change_in_state_for_activity();
+
+    // call the appropriate callback that the deriver can change to suit
+    // his AJAX-ridden motives, if he returns a string they want to switch
+    // to then switch and dont show the views for this screen
+    // NEED TO CALL show_views() to show things
+    this.on_show(private_state_in)
+};
+
+Activity.prototype.get_state_from_browser_link = function() {
+
+    // parse out the current state from the browser
+    try {
+        return JSON.parse(JSON.parse(window.location.hash
+                    .split('#' + this.hashLink + '/')[1].trim()));
+    } catch (err) {
+        return {};
+    }
+};
+
+Activity.prototype.reflect_change_in_state_for_activity = function() {
+
+    // this does not need a pound sign ('#') to be in the rvalue string,
+    // the pound sign is added automatically
+    window.location.hash = this.construct_state_for_browser_url();
+};
+
+Activity.prototype.construct_state_for_browser_url = function() {
+    
+    // concatenate the id for the activity with the public state and
+    // return
+    return this.id + '/' + JSON.stringify(this.public_state);
+};
+/**************************************************************************
+ * PRIVATES
+/*************************************************************************/

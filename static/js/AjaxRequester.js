@@ -57,9 +57,7 @@ AjaxRequester.prototype.post = function(url_in, data, callback) {
     });
 }
 
-/*
- * This function executes a callback
- */
+/* This function executes a callback when all the requests are done */
 AjaxRequester.prototype.wait_for_all = function(callback) {
 
     // which scope does this have?
