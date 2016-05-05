@@ -8,7 +8,6 @@ function MainActivity(id_in, router_in) {
 MainActivity.prototype = new Activity();
 
 MainActivity.prototype.on_show = function(optional_data) {
-
     this.redraw();
     this.wire_up_widgets();
     this.show_views();
@@ -28,4 +27,3 @@ MainActivity.prototype.wire_up_widgets = function() {
         NProgress.done(true);
     });
 }
-
