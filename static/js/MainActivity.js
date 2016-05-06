@@ -1,6 +1,6 @@
 function MainActivity(id_in, router_in) {
 
-    // call the constructor for the base class 
+    // call the constructor for the base class
     Activity.call(this, id_in, router_in);
 
     // Objects that are going to get wired with callbacks soon

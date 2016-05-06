@@ -1,5 +1,5 @@
 /*
- *      Boot.js
+ *      BootLoader.js
  *
  * This file contains the initial code for the library, like making all views
  * invisible to start and to import all the needed library files into the html
