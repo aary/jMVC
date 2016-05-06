@@ -57,7 +57,12 @@ AjaxRequester.prototype.post = function(url_in, data, callback) {
     });
 }
 
-/* This function executes a callback when all the requests are done */
+/* 
+ * This function executes the passed in callback when all the requests are
+ * done.  Very Inefficient.  I hate how javascript has threads without any
+ * synchronization method.  If you know a better way to do this please let me
+ * know.
+ */
 AjaxRequester.prototype.wait_for_all = function(callback) {
 
     // which scope does this have?

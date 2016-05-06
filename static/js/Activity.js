@@ -45,16 +45,41 @@ function Activity(id_in, router_in) {
  * Activity::redraw function to lay out any templates (for example
  * Handlebar templates that you might have)
  *
+ * on_show() being called with private_state_in indicates that some of the
+ * data that the activity needs (which would usually have been fetched with
+ * AJAX calls) is already there, so be sure to multiplex your network calls
+ * based on that.
+ *
  * on_hide() is called before the activity disappears from sight.  Browser
  * specific things like storing data in cookies for further use should be done
  * here.
- *
- * When on_show is called with private_state_in, that indicates that some of
- * the AJAX calls have been done for you and the data is the result of those
- * calls, so be sure to multiplex your network calls based on that.
  */
+Activity.prototype.before_show = function() {};
 Activity.prototype.on_show = function(private_state_in) { };
 Activity.prototype.on_hide = function() { };
+
+/*
+ * Used to redraw the screen.  
+ *
+ * Usually all that would need to go here is a call to
+ * redraw_handlebar_template_with_context() with the appropriate Handlebars
+ * context.  For more information on how to use Handlebars consult Google.
+ *
+ * ** This is not called by the library, you are in charge of calling this.
+ *    This function has been put here simply as a style guideline.  **
+ */
+Activity.prototype.redraw = function() {};
+
+/*
+ * Used to link all the widgets on the screen to possible callbacks.  For
+ * example if the redraw() function was used to place several buttons on the
+ * screen then you would set up the callback for click events on the button
+ * here
+ *
+ * ** This is not called by the library, you are in charge of calling this.
+ *    This function has been put here simply as a style guideline.  **
+ */
+Activity.prototype.wire_up_widgets = function() {};
 
 /*
  * Used to show the views on the screen, if called with a null parameter
@@ -75,17 +100,6 @@ Activity.prototype.show_views = function() {
     this.router.remove_progress_bar();
     $('#' + this.id).fadeIn(FADE_MS);
 };
-
-/*
- * Used to redraw the screen.  All code that is used for this purpose has
- * to go in here.  The suggested use for an activity is to call this after all
- * the data for the activity has been loaded.  Most of the time you would put
- * a call to redraw_handlebar_template_with_context() in this function.
- *
- * This is not called by the library, you are in charge of calling this.  This
- * function has been put here simply as a style guideline.
- */
-Activity.prototype.redraw = function() {};
 
 /*
  * A utility function that can be used to redraw the handlebar template

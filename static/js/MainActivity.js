@@ -1,7 +1,9 @@
 function MainActivity(id_in, router_in) {
 
+    // call the constructor for the base class 
     Activity.call(this, id_in, router_in);
 
+    // Objects that are going to get wired with callbacks soon
     this.button = {};
     this.button_finish = {};
 }
@@ -9,9 +11,9 @@ MainActivity.prototype = new Activity();
 
 MainActivity.prototype.on_show = function(optional_data) {
 
-    this.redraw();
-    this.wire_up_widgets();
-    this.show_views();
+    this.redraw(); // empty but here jlt
+    this.wire_up_widgets(); // defined below
+    this.show_views(); // actually shows the views on screen
 }
 
 MainActivity.prototype.wire_up_widgets = function() {
