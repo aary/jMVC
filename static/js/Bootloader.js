@@ -1,22 +1,22 @@
 /*
- *      BootLoader.js
+ *      Bootloader.js
  *
  * This file contains the initial code for the library, like making all views
  * invisible to start and to import all the needed library files into the html
  *
- * Really wanted to call this BootLoader.js but ...
+ * Really wanted to call this Bootstrap.js but ...
  */
 
 /* This class has all the boot methods */
-function BootLoader() {};
+function Bootloader() {};
 
 $(document).ready(function() {
-    var bootloader = new BootLoader();
+    var bootloader = new Bootloader();
     bootloader.boot(); // to be explicit
 });
 
-/* Called when the document has loaded */
-BootLoader.prototype.boot = function() {
+/* Boot function.  This function initializes the library. */
+Bootloader.prototype.boot = function() {
 
     // the router
     this.router = new Router();
@@ -32,7 +32,7 @@ BootLoader.prototype.boot = function() {
  * This function looks for all divs with the id jmvc-controller and makes them
  * all invisible.  This also adds all the controllers to the router
  */
-BootLoader.prototype.initialize_controllers = function() {
+Bootloader.prototype.initialize_controllers = function() {
     
     // set up the public activities
     var id_to_public_activities_object = 
@@ -47,9 +47,9 @@ BootLoader.prototype.initialize_controllers = function() {
 
 
 /*******************************************************************************
- *                              PRIVATE METHODS                                *
+ *                            PRIVATE HELPER METHODS                           *
  ******************************************************************************/
-BootLoader.prototype.id_to_controller_object_for_class = function(classname) {
+Bootloader.prototype.id_to_controller_object_for_class = function(classname) {
 
     // The array of ids of all the controllers with the class jmvc-controller
     var idArray = [];
