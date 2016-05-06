@@ -20,7 +20,7 @@ function Activity(id_in, router_in) {
         assert($("#" + this.id).length, "Id assigned to activity must exist");
     }
 
-    /* Store the router as an instance here */
+    /* Store the router as an instance because I dont know how to singleton */
     this.router = router_in;
 
     /*
