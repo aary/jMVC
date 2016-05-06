@@ -10,29 +10,25 @@ FADE_MS = 500;
 
 function Activity(id_in, router_in) {
 
-    /*
-     * Set the public ID for the current activity, this should correspond
-     * exactly to the id tag of the div that contains the controller's
-     * frontend in the html
-     */
+    // Set the public ID for the current activity, this should correspond
+    // exactly to the id tag of the div that contains the controller's
+    // frontend in the html
     this.id = id_in;
     if (this.id) {
         assert($("#" + this.id).length, "Id assigned to activity must exist");
     }
 
-    /* Store the router as an instance because I dont know how to singleton */
+    // Store the router as an instance because I don't know how to singleton
     this.router = router_in;
 
-    /*
-     * this is the public state that the controller fetches from the hash link
-     * in the url in the browser
-     */
+    // this is the public state that the controller fetches from the hash link
+    // in the url in the browser
     this.public_state = {};
 
-    /* This is the private state of the activity.  Store all data here. */
+    // This is the private state of the activity.  Store all data here
     this.private_state = {};
 
-    /* Get a default ajax requester for this activity */
+    // Get a default ajax requester for this activity
     this.ajax_requester = new AjaxRequester();
 }
 
