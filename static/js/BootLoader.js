@@ -12,11 +12,11 @@ function BootLoader() {};
 
 $(document).ready(function() {
     var bootloader = new BootLoader();
-    bootloader.init(); // to be explicit
+    bootloader.boot(); // to be explicit
 });
 
 /* Called when the document has loaded */
-BootLoader.prototype.init = function() {
+BootLoader.prototype.boot = function() {
 
     // the router
     this.router = new Router();
