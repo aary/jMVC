@@ -130,8 +130,6 @@ Activity.prototype.redraw_handlebar_template_with_context = function(template,
 /* Use this to hide the activity from sight */
 Activity.prototype.hide = function(milli_seconds_to_fade_out) {
 
-    console.log("Activity::hide()");
-
     // Call callbacks
     this.on_hide();
 
