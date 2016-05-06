@@ -6,8 +6,6 @@
  * on the browser screen.  Only one activity is to stay on screen at a time.
  */
 
-FADE_MS = 500;
-
 function Activity(id_in, router_in) {
 
     // Set the public ID for the current activity, this should correspond
@@ -25,7 +23,8 @@ function Activity(id_in, router_in) {
     // in the url in the browser
     this.public_state = {};
 
-    // This is the private state of the activity.  Store all data here
+    // This is the private state of the activity.  Store all data that is not
+    // public here
     this.private_state = {};
 
     // Get a default ajax requester for this activity
@@ -49,9 +48,18 @@ function Activity(id_in, router_in) {
  * on_hide() is called before the activity disappears from sight.  Browser
  * specific things like storing data in cookies for further use should be done
  * here.
+ *
+ * ** You will have to call Activity.actually_show() to actually show things
+ *    Call this when all the setup is done.  JavaScript has forced my hand in
+ *    doing this. **
  */
 Activity.prototype.before_show = function() {};
 Activity.prototype.on_show = function(private_state_in) {};
+Activity.prototype.actually_show = function() {
+    this.redraw();
+    this.wire_up_widgets();
+    this.show_views();
+};
 Activity.prototype.on_hide = function() {};
 
 /*

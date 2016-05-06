@@ -10,10 +10,7 @@ function MainActivity(id_in, router_in) {
 MainActivity.prototype = new Activity();
 
 MainActivity.prototype.on_show = function(optional_data) {
-
-    this.redraw(); // empty but here jlt
-    this.wire_up_widgets(); // defined below
-    this.show_views(); // actually shows the views on screen
+    this.actually_show();
 }
 
 MainActivity.prototype.wire_up_widgets = function() {
