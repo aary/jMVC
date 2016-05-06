@@ -56,7 +56,7 @@ function Activity(id_in, router_in) {
  */
 Activity.prototype.before_show = function() {};
 Activity.prototype.on_show = function(private_state_in) { };
-Activity.prototype.on_hide = function() { };
+Activity.prototype.on_hide = function() {};
 
 /*
  * Used to redraw the screen.  
