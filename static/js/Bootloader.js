@@ -20,8 +20,11 @@ $(document).ready(function() {
 /* Boot function.  This function initializes the library. */
 Bootloader.prototype.boot = function() {
 
-    // the router
-    this.router = new Router();
+    // the router make it a singleton
+    assert(!("router" in window), "A router instance already exists in " + 
+            "window");
+    window.router = new Router();
+    this.router = window.router;
 
     // initialize all the controllers and add them to the router
     this.initialize_controllers();
@@ -69,7 +72,7 @@ Bootloader.prototype.id_to_controller_object_for_class = function(classname) {
         // get the controller using a hack.  But then again javascript feels
         // like a hack itself
         var controller_object = new window[$("#" + val).attr("controller")](
-            val, this.router);
+            val);
         object_to_return[val] = controller_object;
 
         // make the controller invisible

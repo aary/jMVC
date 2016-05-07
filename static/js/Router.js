@@ -27,7 +27,6 @@ function Router() {
     this.add_progress_bar_to_body();
 }
 
-
 /* 
  * Parses the url in the browser and routes to that activity, if the url
  * is invalid or if the activity is private then this falls back to the
@@ -86,6 +85,41 @@ Router.prototype.switch_to = function(activity_id_in) {
 };
 
 /* 
+ * Gets the public state for the activity encoded in the url as a JSON 
+ * object 
+ */
+Router.prototype.get_public_activity_state = function() {
+
+    try {
+        // Get the string before the 
+        var public_state = window.location.hash.split("#/")[1].split("/")[1];
+        console.log(public_state);
+
+        return JSON.parse(public_state);
+    } catch (err) {
+        return {};
+    }
+};
+
+/* Called when an activity changes its public state */
+Router.prototype.set_public_activity_state = function(
+        public_activity_state) {
+
+    // set the link after the hash tag to match the state of the object
+    // TODO Change this from pure JSON to url encoded JSON maybe?
+    try {
+        window.location.hash = "/" + this.current_activity.id + "/" + 
+            JSON.stringify(public_activity_state);
+    } catch (err) {
+        window.location.hash = "/" + this.current_activity.id + "/{}";
+    }
+};
+
+
+/**************************************************************************
+ *                          PRIVATE METHODS                               *
+ **************************************************************************/
+/* 
  * Setter for the public activities, give this a dictionary with activity
  * ids that map to the appropriate activity object
  */
@@ -132,10 +166,6 @@ Router.prototype.remove_progress_bar = function() {
     $("#progress_bar").css("display", "none");
 };
 
-
-/**************************************************************************
- *                          PRIVATE METHODS                               *
- **************************************************************************/
 /*
  * This function does no checking whatsoever and simply displays the given
  * activity id on the screen.  It looks first in the public activities

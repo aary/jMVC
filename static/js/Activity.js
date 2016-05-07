@@ -6,7 +6,7 @@
  * on the browser screen.  Only one activity is to stay on screen at a time.
  */
 
-function Activity(id_in, router_in) {
+function Activity(id_in) {
 
     // Set the public ID for the current activity, this should correspond
     // exactly to the id tag of the div that contains the controller's
@@ -17,7 +17,10 @@ function Activity(id_in, router_in) {
     }
 
     // Store the router as an instance because I don't know how to singleton
-    this.router = router_in;
+    if (id_in !== undefined) {
+        assert('router' in window);
+        this.router = window.router;
+    }
 
     // this is the public state that the controller fetches from the hash link
     // in the url in the browser
@@ -53,7 +56,6 @@ function Activity(id_in, router_in) {
  *    Call this when all the setup is done.  JavaScript has forced my hand in
  *    doing this. **
  */
-Activity.prototype.before_show = function() {};
 Activity.prototype.on_show = function(private_state_in) {};
 Activity.prototype.actually_show = function() {
     this.redraw();
@@ -113,13 +115,6 @@ Activity.prototype.show_views = function() {
 Activity.prototype.redraw_handlebar_template_with_context = function(template,
         placeholder, context) {
 
-    // print useful debugging information to the console
-    console.log("Compiling handlebar template with the id " + 
-            template + "... With context .. ");
-    console.log(context);
-    console.log("Trying to put this resulting html at placeholder " 
-            + placeholder);
-
     // execute the 4 necessary steps
     var the_template_script = $(template).html(); 
     var the_template = Handlebars.compile(the_template_script);
@@ -127,6 +122,12 @@ Activity.prototype.redraw_handlebar_template_with_context = function(template,
     $(placeholder).html(compiled_html);
 };
 
+/* 
+ * Renders the HTML for the activity on the page, if you want to add
+ * everything in javascript.  Otherwise you can just add the HTML for this
+ * activity in the HTML file for the app itself.
+ */
+Activity.prototype.render = function() { return undefined; }
 
 /**************************************************************************
  * PRIVATES
@@ -157,8 +158,8 @@ Activity.prototype.show = function(private_state_in) {
     // after getting the state from the browser for the case when the
     // default public state is not even provided when the activity's show
     // function is called
-    this.public_state = this.get_state_from_browser_link();
-    this.reflect_change_in_state_for_activity();
+    this.public_state = this.router.get_public_activity_state();
+    this.router.set_public_activity_state(this.public_state);
 
     // call the appropriate callback that the deriver can change to suit
     // his AJAX-ridden motives, if he returns a string they want to switch
@@ -167,30 +168,10 @@ Activity.prototype.show = function(private_state_in) {
     this.on_show(private_state_in)
 };
 
-Activity.prototype.get_state_from_browser_link = function() {
-
-    // parse out the current state from the browser
-    try {
-        return JSON.parse(JSON.parse(window.location.hash
-                    .split('#' + this.hashLink + '/')[1].trim()));
-    } catch (err) {
-        return {};
-    }
-};
-
-Activity.prototype.reflect_change_in_state_for_activity = function() {
-
-    // this does not need a pound sign ('#') to be in the rvalue string,
-    // the pound sign is added automatically
-    window.location.hash = this.construct_state_for_browser_url();
-};
-
-Activity.prototype.construct_state_for_browser_url = function() {
-    
-    // concatenate the id for the activity with the public state and
-    // return
-    return this.id + '/' + JSON.stringify(this.public_state);
-};
 /**************************************************************************
  * PRIVATES
 /*************************************************************************/
+Activity.prototype.set_public_state = function(public_state_in) {
+    this.public_state = public_state_in;
+    this.router.set_public_activity_state(this.public_state);
+}
