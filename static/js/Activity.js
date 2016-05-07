@@ -102,7 +102,7 @@ Activity.prototype.show_views = function() {
     
     // remove the preliminary status bar
     this.router.remove_progress_bar();
-    $('#' + this.id).fadeIn(FADE_MS);
+    $('#' + this.id).fadeIn(CONFIG.FADE_MS);
 };
 
 /*

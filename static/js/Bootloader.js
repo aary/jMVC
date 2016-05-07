@@ -5,6 +5,8 @@
  * invisible to start and to import all the needed library files into the html
  *
  * Really wanted to call this Bootstrap.js but ...
+ *
+ * TODO Add asserts
  */
 
 /* This class has all the boot methods */

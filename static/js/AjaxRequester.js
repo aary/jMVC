@@ -1,10 +1,9 @@
-/* 
- * For really lightning fast rechecks, I don't care about performance with a
- * language which is threaded but pretends to be single threaded.  That just
- * leads to bad code that "just works"
+/*
+ *      AjaxRequester.js
+ *
+ * This module contains functionality which can be used to make ajax requests
+ * from Activities
  */
-TIME_BETWEEN_CHECKS = 1;
-
 function AjaxRequester() {
 
     // the counter for the number of requests that have been registered
@@ -84,7 +83,7 @@ AjaxRequester.prototype.wait_for_all = function(callback) {
 
     wait_for(function() { 
         return this.number_of_requests === 0; 
-    }.bind(this), TIME_BETWEEN_CHECKS, function() { 
+    }.bind(this), CONFIG.TIME_BETWEEN_CHECKS, function() { 
         callback(); 
     });
 }
