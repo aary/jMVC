@@ -19,6 +19,7 @@ function Router() {
      */
     this.public_activities = {};
     this.private_activities = {};
+    this.path_to_activities = {};
 
     /* A pointer to the current activity that is on the screen */
     this.current_activity = undefined;
@@ -135,6 +136,44 @@ Router.prototype.set_private_activities = function(private_activities_in) {
     this.private_activities = private_activities_in;
 };
 
+/*
+ * Used to set the nested map for path to activities.  For example if the HTML
+ * is 
+ *      <Activity path="" controller="IndexActivity">
+ *      </Activity>
+ *
+ *      <Activity path="albums" controller="AlbumsActivity">
+ *          <Activity path="create" controller="CreateAlbumActivity">
+ *          </Activity>
+ *
+ *          <Activity path="view" controller="ViewAlbumsActivity">
+ *          </Activity>
+ *      </Activity>
+ *
+ * the object that should be set is 
+ *      {
+ *          "" :       {
+ *                         "activity" : new IndexActivity();
+ *                         "children" : []
+ *                     },
+ *          "albums" : {
+ *                         "activity" : new AlbumsActivity();
+ *                         "children" : [
+ *                                          "create" : {
+ *                                                          "activity" : 
+ *                                                          "children" : []
+ *                                                     },
+ *                                          "view" :   {
+ *                                                          "activity" : 
+ *                                                          "children" : []
+ *                                                     }
+ *                                      ]
+ *                     }
+ *      }
+ */
+Router.prototype.set_path_to_activities = function(path_to_activities_in) {
+};
+
 /* 
  * Adds a progress bar to the body, this should be removed as soon as
  * the views for an activity are displayed on screen with the
@@ -207,6 +246,17 @@ Router.prototype.route_to_default_activity = function() {
     
     // route to the appropriate default activity
     this.route_to(Object.keys(this.public_activities)[0]);
+};
+
+/* Gets the path from the url */
+Router.prototype.get_path_from_url = function(url) {
+
+    // get the url without the hash
+    url = url.split("#/").slice(-1)[0];
+
+    // the path at which the current page is
+    path = url.split("/");
+    return path;
 };
 /**************************************************************************
  *                          PRIVATE METHODS                               *
