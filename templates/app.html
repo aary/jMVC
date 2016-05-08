@@ -44,33 +44,20 @@
         </div>
         </nav> <!-- navbar -->
 
-        <div class="container">
-            <Activity controller="MainActivity" path="">
-                    <Activity path="click" controller="ClickMeActivity">
-                        <button id="home_controller_button" class="btn btn-default
-                            btn-lg">Click me!</button>
+        <Activity controller="MainActivity" path="">
+            <div class="container">
+                <Activity path="click" controller="ClickMeActivity">
+                    <button id="home_controller_button" class="btn btn-default
+                        btn-lg">Click me!</button>
 
-                        <Activity path="finish" controller="FinishMeActivity">
-                            <button id="home_controller_button_finish" class="btn
-                                btn-default btn-lg">Click me to finish
-                                loading!</button>
-                        </Activity>
+                    <Activity path="finish" controller="FinishMeActivity">
+                        <button id="home_controller_button_finish" class="btn
+                            btn-default btn-lg">Click me to finish
+                            loading!</button>
                     </Activity>
-            </Activity>
-        </div>
-
-
-        <!--<Something path="" id="top">
-            <Something path="child" id="first_child">
-                <Something path="grandchild" id="grand_child1">
-                    <Something path="secondgrandchild" id="grandgrandchild" />
-                </Something>
-            </Something>
-            <Something path="secondchild" id="second_child">
-            </Something>
-        </Something>
-        <Something path="secondtop" id="secondtop" />-->
-
+                </Activity>
+            </div>
+        </Activity>
 
         <script type="text/javascript" src="./static/js/Assert.js"></script>
         <script type="text/javascript" src="./static/js/config.js"></script>

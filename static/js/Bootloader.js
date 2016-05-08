@@ -39,27 +39,28 @@ Bootloader.prototype.link_activities_to_router = function() {
 
     // set up the path things
     this.router.set_path_to_activities(this.get_path_map_from_dom());
-    
-    // set up the path for all the activities
-    // var id_to_controller_object = this.id_to_controller_object_for_activities();
-    // this.router.set_public_activities(id_to_controller_object);
+    this.router.inverted_index_activity_path = 
+        this.get_inverted_index_from_path_map(this.router.path_to_activities);
+    console.log(this.router.inverted_index_activity_path);
 }
 
 
 /*******************************************************************************
  *                            PRIVATE HELPER METHODS                           *
  ******************************************************************************/
+/* Gets a map from the DOM that maps the paths to the activities they use */
 Bootloader.prototype.get_path_map_from_dom = function() {
 
-    var object_to_return = {};
+    var path_to_activity_children = {};
 
     // first get all the objects that are at the top level
-    var top_level = $("body").children("Activity");
-    top_level.each(function(index, value) {
+    $.each(this.get_immediate_children_for($("body")), function(index, value) {
 
+        // extract the controller type and the path from the DOM element, make
+        // map for children of the element
         var controller_for_value = $(value).attr("controller");
         var path_for_value = $(value).attr("path");
-        object_to_return[$(value).attr("path")] = {
+        path_to_activity_children[$(value).attr("path")] = {
             "activity": 
                 new window[controller_for_value](path_for_value), 
             "children": {}
@@ -68,27 +69,25 @@ Bootloader.prototype.get_path_map_from_dom = function() {
 
     // now loop through them and recurse, passing the children object into
     // each one of the recursive calls
-    $.each(object_to_return, function(path, value) {
-        this.fill_in_each_child(path, value.children);
+    $.each(path_to_activity_children, function(path, value) {
+        this.get_path_map_from_dom_helper(path, value.children);
     }.bind(this));
 
-    console.log(JSON.stringify(object_to_return, null, 10));
-    return object_to_return;
+    console.log(path_to_activity_children);
+    return path_to_activity_children;
 };
 
-Bootloader.prototype.fill_in_each_child = function(path, children_map) {
-    
+Bootloader.prototype.get_path_map_from_dom_helper = function(path, 
+        path_to_activity_children) {
+
     // loop through and find all the children of the activity with path given
     // add those to the children map
-    console.log("given path ", path);
-    $("Activity[path='" + path + "']").children("Activity").each(
-        function(index, value) {
+    $.each(this.get_immediate_children_for(
+            $("Activity[path='" + path + "']")), function(index, value) {
 
         var controller_for_value = $(value).attr("controller");
         var path_for_value = $(value).attr("path");
-        console.log(controller_for_value);
-        console.log(path_for_value);
-        children_map[$(value).attr("path")] = {
+        path_to_activity_children[$(value).attr("path")] = {
             "activity": 
                 new window[controller_for_value](path_for_value), 
             "children": {}
@@ -96,7 +95,66 @@ Bootloader.prototype.fill_in_each_child = function(path, children_map) {
     });
 
     // now recurse
-    $.each(children_map, function(path, value) {
-        this.fill_in_each_child(path, value.children);
+    $.each(path_to_activity_children, function(path, value) {
+        this.get_path_map_from_dom_helper(path, value.children);
+    }.bind(this));
+};
+
+/* 
+ * Skips all the children for the given jQuery element that are not Activities
+ * and returns the children of that element
+ */
+Bootloader.prototype.get_immediate_children_for = function(element) {
+
+    // the object to return
+    var array_of_children = [];
+
+    // call recursive implementation
+    this.get_immediate_children_for_helper(element, array_of_children);
+    return array_of_children;
+};
+Bootloader.prototype.get_immediate_children_for_helper = function(element, 
+        array_of_children) {
+
+    // loop through the children and add them to the list if they are
+    // activities, else recurse and find its children until hit either no more
+    // children
+    $.each($(element).children(), function(index, value) {
+        if ($(value).prop("tagName") == "ACTIVITY") {
+            array_of_children.push(value);
+        }
+        else {
+            this.get_immediate_children_for_helper(value, array_of_children);
+        }
+    }.bind(this));
+};
+
+/* 
+ * Gets an inverted index from the path to the broken up path, so for
+ * a path 'messages' this returns ["", "inbox", "messages"] since the messages
+ * route is found at /inbox/messages
+ */
+Bootloader.prototype.get_inverted_index_from_path_map = function(path_map) {
+    var stack_path = [];
+    var inverted_index = {};
+    this.get_inverted_index_from_path_map_helper(path_map, stack_path, 
+            inverted_index);
+    return inverted_index;
+};
+
+Bootloader.prototype.get_inverted_index_from_path_map_helper = function(path_map, 
+        stack_path, inverted_index) {
+    $.each(path_map, function(key, value) {
+
+        // push the key onto the stack
+        stack_path.push(key);
+
+        // add the path for the current stack into the map
+        inverted_index[key] = stack_path.slice();
+        this.get_inverted_index_from_path_map_helper(value.children, stack_path, 
+            inverted_index);
+
+        // pop to add the next key
+        stack_path.pop();
     }.bind(this));
 };

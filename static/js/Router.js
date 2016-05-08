@@ -18,6 +18,7 @@ function Router() {
      * should be the same as in the HTML
      */
     this.path_to_activities = {};
+    this.inverted_index_activity_path = {};
 
     /* A pointer to the current activity that is on the screen */
     this.current_activity = undefined;
@@ -40,7 +41,7 @@ Router.prototype.route_to_current_activity = function() {
     // route to the activity gotten from the hash url, if no public
     // activity exists with the given id then this goes straight to the
     // default public activity
-    this.route_to(current_activity_id_from_hash);
+    this.route_to(path);
 };
 
 /* 
@@ -155,7 +156,7 @@ Router.prototype.remove_progress_bar = function() {
  * on the activities by sending events to the ActivityGod class in order
  */
 Router.prototype.route_to = function(path) {
-    
+    console.log("routing to path :", path);
 };
 
 /* The default activity is the first in the public_activities list */
