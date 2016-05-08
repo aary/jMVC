@@ -13,7 +13,8 @@ function Activity(id_in) {
     // frontend in the html
     this.id = id_in;
     if (this.id) {
-        assert($("#" + this.id).length, "Id assigned to activity must exist");
+        assert($("Activity[path='" + this.id + "']").length, 
+                "Id assigned to activity must exist");
     }
 
     // Store the router as an instance because I don't know how to singleton

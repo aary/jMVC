@@ -8,9 +8,9 @@ function assert(condition, message) {
     if (!condition) {
         message = "Assertion failed : " + message;
         if (typeof Error !== "undefined") {
-            alert(message);
             var error = new Error(message);
             console.log(error.stack);
+            alert(message + "\n" + error.stack);
             return;
         }
         alert(message);

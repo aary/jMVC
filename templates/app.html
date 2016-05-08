@@ -44,18 +44,23 @@
         </div>
         </nav> <!-- navbar -->
 
-        <Activity class="jmvc-public-controller jmvc-main-controller" 
-            controller="MainActivity" path="" id="home_controller">
-            <div class="container">
-                <button id="home_controller_button" class="btn btn-default
-                    btn-lg">Click me!</button>
-                <button id="home_controller_button_finish" class="btn
-                    btn-default btn-lg">Click me to finish loading!</button>
-            </div>
-        </Activity>
+        <div class="container">
+            <Activity controller="MainActivity" path="">
+                    <Activity path="click" controller="ClickMeActivity">
+                        <button id="home_controller_button" class="btn btn-default
+                            btn-lg">Click me!</button>
+
+                        <Activity path="finish" controller="FinishMeActivity">
+                            <button id="home_controller_button_finish" class="btn
+                                btn-default btn-lg">Click me to finish
+                                loading!</button>
+                        </Activity>
+                    </Activity>
+            </Activity>
+        </div>
 
 
-        <Something path="" id="top">
+        <!--<Something path="" id="top">
             <Something path="child" id="first_child">
                 <Something path="grandchild" id="grand_child1">
                     <Something path="secondgrandchild" id="grandgrandchild" />
@@ -64,7 +69,7 @@
             <Something path="secondchild" id="second_child">
             </Something>
         </Something>
-        <Something path="secondtop" id="secondtop" />
+        <Something path="secondtop" id="secondtop" />-->
 
 
         <script type="text/javascript" src="./static/js/Assert.js"></script>
@@ -77,6 +82,10 @@
         <script type="text/javascript" src="./static/js/BootLoader.js"></script>
         <script type="text/javascript"
             src="./static/js/MainActivity.js"></script>
+        <script type="text/javascript"
+            src="./static/js/ClickMeActivity.js"></script>
+        <script type="text/javascript"
+            src="./static/js/FinishMeActivity.js"></script>
     </body>
 
 </html>

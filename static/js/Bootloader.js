@@ -38,54 +38,32 @@ Bootloader.prototype.boot = function() {
 Bootloader.prototype.link_activities_to_router = function() {
 
     // set up the path things
-    this.get_path_map();
+    this.router.set_path_to_activities(this.get_path_map_from_dom());
     
     // set up the path for all the activities
-    var id_to_controller_object = this.id_to_controller_object_for_activities();
-    this.router.set_public_activities(id_to_controller_object);
+    // var id_to_controller_object = this.id_to_controller_object_for_activities();
+    // this.router.set_public_activities(id_to_controller_object);
 }
 
 
 /*******************************************************************************
  *                            PRIVATE HELPER METHODS                           *
  ******************************************************************************/
-Bootloader.prototype.id_to_controller_object_for_activities = function() {
-
-    // The array of ids of all the controllers with the class jmvc-controller
-    var idArray = [];
-    $("body").children("Activity").each(function () {
-        idArray.push(this.id);
-    });
-
-    // the object that is going to go in the router.set_*_activities()
-    // function
-    var object_to_return = {};
-
-    // set up the activities in the router
-    idArray.forEach(function(val, index) {
-
-        // get the controller using a hack.  But then again javascript feels
-        // like a hack itself
-        var controller_object = new window[$("#" + val).attr("controller")](
-            val);
-        object_to_return[val] = controller_object;
-
-        // make the controller invisible
-        $("#" + val).css("display", "none");
-
-    }.bind(this));
-
-    return object_to_return;
-};
-
-Bootloader.prototype.get_path_map = function() {
+Bootloader.prototype.get_path_map_from_dom = function() {
 
     var object_to_return = {};
 
     // first get all the objects that are at the top level
-    var top_level = $("body").children("Something");
+    var top_level = $("body").children("Activity");
     top_level.each(function(index, value) {
-        object_to_return[$(value).attr("path")] = {"activity": {}, "children": {}};
+
+        var controller_for_value = $(value).attr("controller");
+        var path_for_value = $(value).attr("path");
+        object_to_return[$(value).attr("path")] = {
+            "activity": 
+                new window[controller_for_value](path_for_value), 
+            "children": {}
+        };
     });
 
     // now loop through them and recurse, passing the children object into
@@ -93,17 +71,28 @@ Bootloader.prototype.get_path_map = function() {
     $.each(object_to_return, function(path, value) {
         this.fill_in_each_child(path, value.children);
     }.bind(this));
-    console.log(JSON.stringify(object_to_return, null, 4));
+
+    console.log(JSON.stringify(object_to_return, null, 10));
+    return object_to_return;
 };
 
 Bootloader.prototype.fill_in_each_child = function(path, children_map) {
     
     // loop through and find all the children of the activity with path given
     // add those to the children map
-    $("Something[path='" + path + "']").children("Something").each(
+    console.log("given path ", path);
+    $("Activity[path='" + path + "']").children("Activity").each(
         function(index, value) {
 
-        children_map[$(value).attr("path")] = {"activity":{}, "children":{}};
+        var controller_for_value = $(value).attr("controller");
+        var path_for_value = $(value).attr("path");
+        console.log(controller_for_value);
+        console.log(path_for_value);
+        children_map[$(value).attr("path")] = {
+            "activity": 
+                new window[controller_for_value](path_for_value), 
+            "children": {}
+        };
     });
 
     // now recurse
@@ -111,32 +100,3 @@ Bootloader.prototype.fill_in_each_child = function(path, children_map) {
         this.fill_in_each_child(path, value.children);
     }.bind(this));
 };
-    
-Bootloader.prototype.id_to_controller_object_for_class = function(classname) {
-
-    // The array of ids of all the controllers with the class jmvc-controller
-    var idArray = [];
-    $("." + classname).each(function () {
-        idArray.push(this.id);
-    });
-
-    // the object that is going to go in the router.set_*_activities()
-    // function
-    var object_to_return = {};
-
-    // set up the activities in the router
-    idArray.forEach(function(val, index) {
-
-        // get the controller using a hack.  But then again javascript feels
-        // like a hack itself
-        var controller_object = new window[$("#" + val).attr("controller")](
-            val);
-        object_to_return[val] = controller_object;
-
-        // make the controller invisible
-        $("#" + val).css("display", "none");
-    }.bind(this));
-
-    return object_to_return;
-};
-

@@ -17,8 +17,6 @@ function Router() {
      * should match directly from the id used in the activity constructor and
      * should be the same as in the HTML
      */
-    this.public_activities = {};
-    this.private_activities = {};
     this.path_to_activities = {};
 
     /* A pointer to the current activity that is on the screen */
@@ -34,55 +32,15 @@ function Router() {
  * default activity.
  */
 Router.prototype.route_to_current_activity = function() {
-    hash_url = window.location.hash;
     
     // parse out the hash url and the public json data
     // If there is no hash in the link then redirect to default page
-    current_activity_id_from_hash = '';
-    if (hash_url !== '') {
-
-        // split the link between the # and consider the latter part
-        current_activity_id_from_hash = hash_url.split('#')[1];
-        if ((typeof current_activity_id_from_hash === undefined) ||
-                (current_activity_id_from_hash === '')) {
-            current_activity_id_from_hash = '';
-
-        } else {
-
-            // Get the array, split between the '/'
-            // Make the activity_id the 0th index, and make the url_data the part 
-            // after the '/' and if there is any problem syntactically then make
-            // url_data an empty object
-            split_array = current_activity_id_from_hash.split('/');
-            current_activity_id_from_hash = split_array[0];
-        }
-    }
+    var path = this.get_path_from_url(window.location.hash);
 
     // route to the activity gotten from the hash url, if no public
     // activity exists with the given id then this goes straight to the
     // default public activity
-    this.route_to_public(current_activity_id_from_hash);
-};
-
-/*
- * This function is used to swap between two activities, it calls the
- * activity::hide() method and then calls the show() method on the other
- * activity.
- */
-Router.prototype.switch_to = function(activity_id_in) {
-
-    // Assert that there is an activity called activity_id_in
-    assert(activity_id_in in this.public_activities || 
-            activity_id_in in this.private_activities, 
-            "Cannot call switch_to() to an activity that does not exist");
-    
-    if (activity_id_in in this.public_activities) {
-        this.current_activity.hide();
-        this.route_to(activity_id_in);
-    } else if (activity_id_in in this.private_activities) {
-        this.current_activity.hide();
-        this.route_to(activity_id_in);
-    }
+    this.route_to(current_activity_id_from_hash);
 };
 
 /* 
@@ -120,22 +78,6 @@ Router.prototype.set_public_activity_state = function(
 /**************************************************************************
  *                          PRIVATE METHODS                               *
  **************************************************************************/
-/* 
- * Setter for the public activities, give this a dictionary with activity
- * ids that map to the appropriate activity object
- */
-Router.prototype.set_public_activities = function(public_activities_in) {
-    this.public_activities = public_activities_in;
-};
-
-/* 
- * Setter for the private activities, give this a dictionary with activity
- * ids that map to the appropriate activity object
- */
-Router.prototype.set_private_activities = function(private_activities_in) {
-    this.private_activities = private_activities_in;
-};
-
 /*
  * Used to set the nested map for path to activities.  For example if the HTML
  * is 
@@ -172,6 +114,7 @@ Router.prototype.set_private_activities = function(private_activities_in) {
  *      }
  */
 Router.prototype.set_path_to_activities = function(path_to_activities_in) {
+    this.path_to_activities = path_to_activities_in;
 };
 
 /* 
@@ -206,43 +149,21 @@ Router.prototype.remove_progress_bar = function() {
 };
 
 /*
- * This function does no checking whatsoever and simply displays the given
- * activity id on the screen.  It looks first in the public activities
- * section and then looks in the private activities section for the given
- * activity
+ * This function accepts an array of path strings, for example the path can be
+ * ['inbox', 'messages'] implying that the route is supposed to be
+ * /inbox/messages.  The function then calls the appropriate lifecycle methods
+ * on the activities by sending events to the ActivityGod class in order
  */
-Router.prototype.route_to = function(activity_id_in) {
+Router.prototype.route_to = function(path) {
     
-    if (activity_id_in in this.public_activities) {
-        this.current_activity = this.public_activities[activity_id_in];
-        this.public_activities[activity_id_in].show();
-    } else if (activity_id_in in this.private_activities) {
-        this.current_activity = this.private_activities[activity_id_in];
-        this.private_activities[activity_id_in].show();
-    }
-};
-
-/*
- * Routes to the public activity given, if none exists with the specified
- * id then this routes to the default activity by calling
- * route_to_default_activity()
- */
-Router.prototype.route_to_public = function(activity_id_in) {
-
-    // if the activity with the given id does no exist then route to the
-    // default and recurse from there?
-    if (!(activity_id_in in this.public_activities)) {
-        this.route_to_default_activity();
-    } else {
-        this.route_to(activity_id_in);
-    }
 };
 
 /* The default activity is the first in the public_activities list */
 Router.prototype.route_to_default_activity = function() {
 
     // Assert to check that there is a default public activity
-    assert(!$.isEmptyObject(this.public_activities));
+    assert(!$.isEmptyObject(this.public_activities), 
+            "router.public_activities cannot be empty");
     
     // route to the appropriate default activity
     this.route_to(Object.keys(this.public_activities)[0]);
