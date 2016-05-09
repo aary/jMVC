@@ -224,17 +224,7 @@ Router.prototype.route_to = function(path) {
         }
     }
     console.log("this current path is ", this.current_path);
-};
-
-/* The default activity is the first in the public_activities list */
-Router.prototype.route_to_default_activity = function() {
-
-    // Assert to check that there is a default public activity
-    assert(!$.isEmptyObject(this.public_activities), 
-            "router.public_activities cannot be empty");
-    
-    // route to the appropriate default activity
-    this.route_to(Object.keys(this.public_activities)[0]);
+    window.location.hash = this.get_url_from_path(this.current_path);
 };
 
 /* Gets the path from the url */
@@ -253,6 +243,13 @@ Router.prototype.get_path_from_url = function(url) {
 };
 Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
+}
+
+Router.prototype.switch_to = function(activity_path) {
+
+    // get the path corresponding to the activity id
+    var path = this.inverted_index_activity_path[activity_path];
+    this.route_to(path);
 }
 /**************************************************************************
  *                          PRIVATE METHODS                               *

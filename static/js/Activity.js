@@ -183,14 +183,11 @@ Activity.prototype.redraw_handlebar_template_with_context = function(template,
 /* Use this to hide the activity from sight */
 Activity.prototype.hide = function(milli_seconds_to_fade_out) {
 
-    // Call callbacks
-    this.on_hide();
-
     // Hide views from screen
     if (typeof milli_seconds_to_fade_out === 'undefined') {
-        $('#' + this.id).hide();
+        $("Activity[path='" + this.id + "']").hide();
     } else {
-        $('#' + this.id).fadeOut(milli_seconds_to_fade_out);
+        $("Activity[path='" + this.id + "']").fadeOut(milli_seconds_to_fade_out);
     }
 };
 
@@ -207,6 +204,7 @@ Activity.prototype.show = function() {
     // default public state is not even provided when the activity's show
     // function is called
     this.public_state = jmvc.router.get_public_activity_state();
+    console.log(this.public_state);
     // jmvc.router.set_public_activity_state(this.public_state);
 
     // call the appropriate callback that the deriver can change to suit

@@ -20,4 +20,7 @@ ClickMeActivity.prototype.wire_up_widgets = function() {
         NProgress.start();
         NProgress.inc(0.2);
     });
+    $("#hide_click_button").click(function() {
+        jmvc.router.switch_to("index");
+    }.bind(this));
 }

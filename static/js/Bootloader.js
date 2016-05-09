@@ -61,9 +61,7 @@ Bootloader.prototype.initialize_activities = function() {
     });
 }
 Bootloader.prototype.hide_activities = function() {
-    $.each(jmvc.activities, function(key, value) {
-        $("Activity[path='" + key + "']").css("display", "none");
-    });
+    $("Activity").css("display", "none");
 }
 
 /*******************************************************************************
