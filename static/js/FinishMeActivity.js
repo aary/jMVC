@@ -8,8 +8,8 @@ function FinishMeActivity(id_in) {
 }
 FinishMeActivity.prototype = new Activity();
 
-FinishMeActivity.prototype.on_show = function(optional_data) {
-    this.actually_show();
+FinishMeActivity.prototype.after_show = function() {
+    this.wire_up_widgets();
 }
 
 FinishMeActivity.prototype.wire_up_widgets = function() {

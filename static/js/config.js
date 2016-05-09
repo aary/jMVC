@@ -4,7 +4,7 @@
  * This file contains the global variable CONFIG that contains the
  * configuration options for this library. 
  */
-CONFIG = {
+jmvc.CONFIG = {
 
     // The seconds an Activity takes to fade in
     FADE_MS : 500,

@@ -17,12 +17,6 @@ function Activity(id_in) {
                 "Id assigned to activity must exist");
     }
 
-    // Store the router as an instance because I don't know how to singleton
-    if (id_in !== undefined) {
-        assert('router' in window);
-        this.router = window.router;
-    }
-
     // this is the public state that the controller fetches from the hash link
     // in the url in the browser
     this.public_state = {};
@@ -33,37 +27,98 @@ function Activity(id_in) {
 
     // Get a default ajax requester for this activity
     this.ajax_requester = new AjaxRequester();
+
+    // set this activity in the window
+    this.register_activity();
 }
 
 /*
  *      Lifecycle methods
  *
- * on_show() is called after the activity has been put on the screen, any
- * and all ajax motives you have should be done here.  The page should be
- * shown completely on the screen with a callback here that calls the
- * Activity::redraw function to lay out any templates (for example
- * Handlebar templates that you might have)
- *
- * on_show() being called with private_state_in indicates that some of the
- * data that the activity needs (which would usually have been fetched with
- * AJAX calls) is already there, so be sure to multiplex your network calls
- * based on that.
- *
- * on_hide() is called before the activity disappears from sight.  Browser
- * specific things like storing data in cookies for further use should be done
- * here.
- *
- * ** You will have to call Activity.actually_show() to actually show things
- *    Call this when all the setup is done.  JavaScript has forced my hand in
- *    doing this. **
+ * These are divided into three different groups of lifecycle methods as follows
+ *      1. When the activity is first being created; when the document loads;
+ *         these are called by the Bootloader
+ *      2. When the activity is going to be routed to by the Router.  These
+ *         are typically analogous to the iOS viewWillAppear, viewDidAppear
+ *         targets
+ *      3. When the activity changes state, when the user calls the
+ *         set_private_state methods on the activity
  */
-Activity.prototype.on_show = function(private_state_in) {};
-Activity.prototype.actually_show = function() {
-    this.redraw();
-    this.wire_up_widgets();
-    this.show_views();
+
+/* 
+ * This should return the HTML for the page that should go within the script
+ * tags for the activity.  Dynamic Activity updating is not supported as of
+ * yet so this can not return HTML with the <Activity> tag.  That should be
+ * encoded in HTML.  Handlebars should be used for dynamic behavior. 
+ *
+ * This is called by the library boot loader. 
+ */
+Activity.prototype.boot = function() { return "" };
+
+/*
+ * These are called when the activity is routed to by the Router class.  So
+ * either when the url changes, the page is refreshed or when someone calls
+ * the router.route_to() method that leads to this Activity.  
+ *
+ * Making a transition in the before_show stage is going to squash the current
+ * activity from loading and reload the path from the not showed part onwards.
+ * For example if this activity had the path /inbox/messages and we made a
+ * router.transition("create") with the create activity being under inbox as
+ * well.  The router would squash the event queue which previously would have
+ * moved through the following stages
+ *      [InboxActivity.before_show, InboxActivity.redraw, 
+ *          InboxActivity.show, InboxActivity.after_show, 
+ *          Messages.before_show, Messages.redraw, Messages.show,
+ *          Messages.after_show] 
+ *      ... All InboxActivity lifecycle methods get executed, router now has 
+ *          [InboxActivity] in its active Activities section
+ *      [Messages.before_show, Messages.redraw, Messages.show,
+ *          Messages.after_show]
+ *
+ * Then if a transition was called the router would squash its queue and move
+ * to the following
+ *      [CreateActivity.before_show, CreateActivity.redraw,
+ *          CreateActivity.show, CreateActivity.after_show]
+ * Without calling the InboxActivity methods again since they had already been
+ * called, since the activity is marked active.
+ */
+Activity.prototype.before_show = function(previous_path) { console.log("before_show"); };
+Activity.prototype.redraw = function() { console.log("redraw"); };
+Activity.prototype.show = function() {};
+Activity.prototype.after_show = function() { console.log("after_show"); };
+
+Activity.prototype.events_for_show = function() {
+    var arr_events = [];
+    arr_events.push(this.before_show.bind(this));
+    arr_events.push(this.redraw.bind(this));
+    arr_events.push(this.show.bind(this));
+    arr_events.push(this.after_show.bind(this));
+    arr_events.push(this.id);
+    return arr_events;
 };
-Activity.prototype.on_hide = function() {};
+
+Activity.prototype.before_hide = function() {};
+Activity.prototype.hide = function() {};
+Activity.prototype.after_hide = function() {};
+
+Activity.prototype.events_for_hide = function() {
+    var arr_events = [];
+    arr_events.push(this.before_hide.bind(this));
+    arr_events.push(this.hide.bind(this));
+    arr_events.push(this.after_hide.bind(this));
+    arr_events.push(this.id);
+    return arr_events;
+};
+
+/* 
+ * These are called when the user calls set_private_state() on the activity.
+ * This is the first method in a trio of methods that are called for the
+ * activity.  Returning a false on should_update will not update the activity.
+ */
+Activity.prototype.should_update = function() { return true; };
+Activity.prototype.before_update = function() { return undefined; };
+Activity.prototype.redraw = function() { console.log("redraw"); };
+Activity.prototype.after_update = function() { return undefined; };
 
 /*
  * Used to redraw the screen.  
@@ -75,7 +130,6 @@ Activity.prototype.on_hide = function() {};
  * ** This is not called by the library, you are in charge of calling this.
  *    This function has been put here simply as a style guideline.  **
  */
-Activity.prototype.redraw = function() {};
 
 /*
  * Used to link all the widgets on the screen to possible callbacks.  For
@@ -104,8 +158,8 @@ Activity.prototype.wire_up_widgets = function() {};
 Activity.prototype.show_views = function() {
     
     // remove the preliminary status bar
-    this.router.remove_progress_bar();
-    $('#' + this.id).fadeIn(CONFIG.FADE_MS);
+    jmvc.router.remove_progress_bar();
+    $("Activity[path='" + this.id + "']").fadeIn(jmvc.CONFIG.FADE_MS);
 };
 
 /*
@@ -122,13 +176,6 @@ Activity.prototype.redraw_handlebar_template_with_context = function(template,
     var compiled_html = the_template(context);
     $(placeholder).html(compiled_html);
 };
-
-/* 
- * Renders the HTML for the activity on the page, if you want to add
- * everything in javascript.  Otherwise you can just add the HTML for this
- * activity in the HTML file for the app itself.
- */
-Activity.prototype.render = function() { return undefined; }
 
 /**************************************************************************
  * PRIVATES
@@ -152,21 +199,21 @@ Activity.prototype.hide = function(milli_seconds_to_fade_out) {
  * the private_state_in parameter can be used to pass in data to this
  * activity.
  */
-Activity.prototype.show = function(private_state_in) {
+Activity.prototype.show = function() {
     
     // get the public state from the browser and set back the state of the
     // browser to match the state of the activity.  This is done here even
     // after getting the state from the browser for the case when the
     // default public state is not even provided when the activity's show
     // function is called
-    this.public_state = this.router.get_public_activity_state();
-    this.router.set_public_activity_state(this.public_state);
+    this.public_state = jmvc.router.get_public_activity_state();
+    // jmvc.router.set_public_activity_state(this.public_state);
 
     // call the appropriate callback that the deriver can change to suit
     // his AJAX-ridden motives, if he returns a string they want to switch
     // to then switch and dont show the views for this screen
     // NEED TO CALL show_views() to show things
-    this.on_show(private_state_in)
+    this.show_views()
 };
 
 /**************************************************************************
@@ -174,5 +221,16 @@ Activity.prototype.show = function(private_state_in) {
 /*************************************************************************/
 Activity.prototype.set_public_state = function(public_state_in) {
     this.public_state = public_state_in;
-    this.router.set_public_activity_state(this.public_state);
+    jmvc.router.set_public_activity_state(this.public_state);
+}
+
+/* Links the activity to the window globally */
+Activity.prototype.register_activity = function() {
+    
+    if (this.id !== undefined) {
+        if (!("activities" in jmvc)) {
+            jmvc.activities = {};
+        }
+        jmvc.activities[this.id] = this;
+    }
 }

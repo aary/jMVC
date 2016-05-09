@@ -8,8 +8,8 @@ function ClickMeActivity(id_in) {
 }
 ClickMeActivity.prototype = new Activity();
 
-ClickMeActivity.prototype.on_show = function(optional_data) {
-    this.actually_show();
+ClickMeActivity.prototype.after_show = function() {
+    this.wire_up_widgets();
 }
 
 ClickMeActivity.prototype.wire_up_widgets = function() {

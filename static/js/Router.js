@@ -23,6 +23,11 @@ function Router() {
     /* A pointer to the current activity that is on the screen */
     this.current_activity = undefined;
 
+    // The event queue for things to happen, see route_to function for more
+    // details
+    this.event_queue = new Queue();
+    this.current_path = [];
+
     /* add the progress bar to the body */
     this.add_progress_bar_to_body();
 }
@@ -52,9 +57,7 @@ Router.prototype.get_public_activity_state = function() {
 
     try {
         // Get the string before the 
-        var public_state = window.location.hash.split("#/")[1].split("/")[1];
-        console.log(public_state);
-
+        var public_state = window.location.hash.split("#/")[1].split("?")[1];
         return JSON.parse(public_state);
     } catch (err) {
         return {};
@@ -66,12 +69,12 @@ Router.prototype.set_public_activity_state = function(
         public_activity_state) {
 
     // set the link after the hash tag to match the state of the object
-    // TODO Change this from pure JSON to url encoded JSON maybe?
+    // Change this from pure JSON to url encoded JSON maybe?
     try {
-        window.location.hash = "/" + this.current_activity.id + "/" + 
-            JSON.stringify(public_activity_state);
+        window.location.hash = this.get_url_from_path(this.current_path) +
+            "?" + JSON.stringify(public_activity_state);
     } catch (err) {
-        window.location.hash = "/" + this.current_activity.id + "/{}";
+        // noop
     }
 };
 
@@ -156,7 +159,71 @@ Router.prototype.remove_progress_bar = function() {
  * on the activities by sending events to the ActivityGod class in order
  */
 Router.prototype.route_to = function(path) {
-    console.log("routing to path :", path);
+
+    // construct the event queue from the path by checking which path elements
+    // need not be worried about
+    console.log("current path is ", this.current_path);
+    console.log("routing to ", path);
+    var i = 0;
+    for (; i < this.current_path.length; ++i) {
+        console.log("path[0] is ", path[0]);
+        console.log("this.current_path[i] is ", this.current_path[i]);
+        
+        // then the path from this point on is correct
+        if (i >= this.current_path.length) {
+            break;
+        }
+        if (path[0] != this.current_path[i]) {
+            break;
+        }
+
+        // pop_front
+        path.shift();
+        console.log("path after shifting is ", path);
+    }
+    console.log("point from current path for which to hide is ", i);
+    console.log("path to show is ", path);
+
+    console.log(jmvc.activities);
+    // first hide the views that should hide
+    for (var j = this.current_path.length - 1; j >= i; --j) {
+        console.log("hiding ", this.current_path[j]);
+        $.each(jmvc.activities[this.current_path[j]].events_for_hide(), 
+                function(index, value) {
+            this.event_queue.enqueue(value);
+        }.bind(this));
+    }
+
+    $.each(path, function(index, value) {
+        $.each(jmvc.activities[value].events_for_show(), 
+                function(index, value) {
+            this.event_queue.enqueue(value);
+            // console.log(value.toString());
+        }.bind(this));
+    }.bind(this));
+    console.log("formed event queue");
+
+    // execute all the functions
+    while(!this.event_queue.isEmpty()) {
+        var thing = this.event_queue.dequeue();
+        if (typeof thing === typeof "string") {
+            // check if hide has finished
+            if (thing === path[0]) {
+                console.log("added ", path[0]);
+                this.current_path.push(path[0]);
+                path.shift();
+            }
+            else if (thing === 
+                    this.current_path[this.current_path.length - 1]) {
+                console.log("removed ", this.current_path[this.current_path.length - 1]);
+                this.current_path.pop();
+            }
+        }
+        else {
+            thing();
+        }
+    }
+    console.log("this current path is ", this.current_path);
 };
 
 /* The default activity is the first in the public_activities list */
@@ -174,12 +241,19 @@ Router.prototype.route_to_default_activity = function() {
 Router.prototype.get_path_from_url = function(url) {
 
     // get the url without the hash
+    if (url.indexOf("?") !== -1) {
+        url = url.substring(0, url.indexOf('?'));
+    }
     url = url.split("#/").slice(-1)[0];
 
     // the path at which the current page is
     path = url.split("/");
+    if (path[path.length - 1] == "") { path.pop(); }
     return path;
 };
+Router.prototype.get_url_from_path = function(path) {
+    return "/" + path.join("/");
+}
 /**************************************************************************
  *                          PRIVATE METHODS                               *
  **************************************************************************/

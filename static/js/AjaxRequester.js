@@ -83,7 +83,7 @@ AjaxRequester.prototype.wait_for_all = function(callback) {
 
     wait_for(function() { 
         return this.number_of_requests === 0; 
-    }.bind(this), CONFIG.TIME_BETWEEN_CHECKS, function() { 
+    }.bind(this), jmvc.CONFIG.TIME_BETWEEN_CHECKS, function() { 
         callback(); 
     });
 }

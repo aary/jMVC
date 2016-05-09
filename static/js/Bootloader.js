@@ -7,6 +7,9 @@
  * Really wanted to call this Bootstrap.js but ...
  */
 
+/* link the library to the window */
+window.jmvc = {};
+
 /* This class has all the boot methods */
 function Bootloader() {};
 
@@ -19,16 +22,21 @@ $(document).ready(function() {
 Bootloader.prototype.boot = function() {
 
     // the router make it a singleton
-    assert(!("router" in window), "A router instance already exists in " + 
+    assert(!("router" in jmvc), "A router instance already exists in " + 
             "window");
-    window.router = new Router();
-    this.router = window.router;
+    jmvc.router = new Router();
+
+    // hides activities
+    this.hide_activities();
 
     // initialize all the controllers and add them to the router
     this.link_activities_to_router();
 
+    // render basic activity state for all the activities out there
+    this.initialize_activities();
+
     // route to the appropriate activity
-    this.router.route_to_current_activity();
+    jmvc.router.route_to_current_activity();
 };
 
 /* 
@@ -37,13 +45,26 @@ Bootloader.prototype.boot = function() {
  */
 Bootloader.prototype.link_activities_to_router = function() {
 
-    // set up the path things
-    this.router.set_path_to_activities(this.get_path_map_from_dom());
-    this.router.inverted_index_activity_path = 
-        this.get_inverted_index_from_path_map(this.router.path_to_activities);
-    console.log(this.router.inverted_index_activity_path);
+    // set up the big map, dont know if it is necessary
+    jmvc.router.set_path_to_activities(this.get_path_map_from_dom());
+
+    // set inverted index
+    jmvc.router.inverted_index_activity_path = 
+        this.get_inverted_index_from_path_map(jmvc.router.path_to_activities);
+    console.log(jmvc.router.inverted_index_activity_path);
 }
 
+/* These either call the boot() method or hide the activities */
+Bootloader.prototype.initialize_activities = function() {
+    $.each(jmvc.activities, function(key, value) {
+        $("Activity[path='" + key + "']").append(value.boot());
+    });
+}
+Bootloader.prototype.hide_activities = function() {
+    $.each(jmvc.activities, function(key, value) {
+        $("Activity[path='" + key + "']").css("display", "none");
+    });
+}
 
 /*******************************************************************************
  *                            PRIVATE HELPER METHODS                           *
@@ -65,7 +86,7 @@ Bootloader.prototype.get_path_map_from_dom = function() {
                 new window[controller_for_value](path_for_value), 
             "children": {}
         };
-    });
+    }.bind(this));
 
     // now loop through them and recurse, passing the children object into
     // each one of the recursive calls
@@ -73,7 +94,7 @@ Bootloader.prototype.get_path_map_from_dom = function() {
         this.get_path_map_from_dom_helper(path, value.children);
     }.bind(this));
 
-    console.log(path_to_activity_children);
+    // console.log(path_to_activity_children);
     return path_to_activity_children;
 };
 
@@ -92,7 +113,7 @@ Bootloader.prototype.get_path_map_from_dom_helper = function(path,
                 new window[controller_for_value](path_for_value), 
             "children": {}
         };
-    });
+    }.bind(this));
 
     // now recurse
     $.each(path_to_activity_children, function(path, value) {
