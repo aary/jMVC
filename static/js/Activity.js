@@ -25,9 +25,6 @@ function Activity(id_in) {
     // public here
     this.private_state = {};
 
-    // Get a default ajax requester for this activity
-    this.ajax_requester = new AjaxRequester();
-
     // set this activity in the window
     this.register_activity();
 }

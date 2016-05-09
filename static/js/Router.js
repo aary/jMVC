@@ -49,6 +49,13 @@ Router.prototype.route_to_current_activity = function() {
     this.route_to(path);
 };
 
+Router.prototype.switch_to = function(activity_path) {
+
+    // get the path corresponding to the activity id and route to it
+    var path = this.inverted_index_activity_path[activity_path];
+    this.route_to(path);
+}
+
 /* 
  * Gets the public state for the activity encoded in the url as a JSON 
  * object 
@@ -77,7 +84,6 @@ Router.prototype.set_public_activity_state = function(
         // noop
     }
 };
-
 
 /**************************************************************************
  *                          PRIVATE METHODS                               *
@@ -245,12 +251,6 @@ Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
 }
 
-Router.prototype.switch_to = function(activity_path) {
-
-    // get the path corresponding to the activity id
-    var path = this.inverted_index_activity_path[activity_path];
-    this.route_to(path);
-}
 /**************************************************************************
  *                          PRIVATE METHODS                               *
  **************************************************************************/
