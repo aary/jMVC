@@ -8,4 +8,6 @@
  * Activity with a path should cause an Activity without a path to get swapped
  * out
  */
-fucntion ActivityStateManager() {}
+function ActivityStateManager() {}
+
+ActivityStateManager.prototype.register_activity_id

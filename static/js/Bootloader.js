@@ -15,6 +15,7 @@ function Bootloader() {};
 
 $(document).ready(function() {
     var bootloader = new Bootloader();
+    window.bootloader = bootloader;
     bootloader.boot(); // to be explicit
 });
 
@@ -25,12 +26,6 @@ Bootloader.prototype.boot = function() {
     assert(!("router" in jmvc), "A router instance already exists in " + 
             "window");
     jmvc.router = new Router();
-
-    // hides activities
-    this.hide_activities();
-
-    // initialize all the controllers and add them to the router
-    this.link_activities_to_router();
 
     // render basic activity state for all the activities out there
     this.initialize_activities();
@@ -54,14 +49,53 @@ Bootloader.prototype.link_activities_to_router = function() {
     console.log(jmvc.router.inverted_index_activity_path);
 }
 
-/* These either call the boot() method or hide the activities */
+/**
+ * \brief This sets up the main activities that have been entered into the HTML
+ *        for the page at the moment.  Only operates on activities that do not
+ *        have ids at the moment.  Them not having ids implies that they have
+ *        not been linked with their parent activities or temporarily with the
+ *        router.
+ */
 Bootloader.prototype.initialize_activities = function() {
-    $.each(jmvc.activities, function(key, value) {
-        $("Activity[path='" + key + "']").append(value.boot());
+
+    var activities_without_ids = $("Activity:not([id])");
+    this.hide_activities(activities_without_ids);
+    // this.set_unique_ids(activities_without_ids);
+}
+
+/**
+ * \brief Hides all the activities passed in
+ */
+Bootloader.prototype.hide_activities = function(activities_without_ids) {
+    assert(activities_without_ids !== undefined);
+
+    $.each(activities_without_ids, function(index, value) {
+        $(value).css("display", "none");
     });
 }
-Bootloader.prototype.hide_activities = function() {
-    $("Activity").css("display", "none");
+
+/**
+ * \brief This sets up all the activities passed in with unique ids
+ */
+Bootloader.prototype.set_unique_ids = function(activities_without_ids) {
+    assert(activities_without_ids !== undefined);
+
+    $.each(activities_without_ids, function(index, value) {
+        assert($(value).attr("id") === undefined);
+        $(value).attr("id", Bootloader.unique_id());
+    });
+};
+
+/**
+ * \brief Returns the next unique integer from the scope of the program
+ * \bug This only goes up until the highest integer that the current
+ *      JavaScript implementation can handle
+ */
+Bootloader.unique_id = function() {
+    if (Bootloader.counter === undefined) {
+        Bootloader.counter = 0;
+    }
+    return Bootloader.counter++;
 }
 
 /*******************************************************************************
