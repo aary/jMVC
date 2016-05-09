@@ -1,0 +1,13 @@
+Add browser support with activities, for example when you browse off the
+screen.
+
+Add embedded activities, so that activities can have child activities.  The
+only difference being that the Router will not call the lifecycle methods but
+rather the activity will call its children's lifecycle methods after it has
+loaded.
+
+Make some sort of Model class through which an Activity can receive events.
+So when something happens in the model class the activity will get an event.
+The model also has to be linked to the AjaxRequester module (which can have
+non AJAX requests) which will tell the models that have registered on it that
+some events have happened.  Circular dependence here?
