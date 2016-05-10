@@ -1,5 +1,5 @@
 /*
- *      ActivityStateManager.js
+ *      ActivityLifecycleManager.js
  *
  * This file contains the module that is needed to control the lifecycle of
  * the activities it controls.  It should maintain a list of activity IDs set
@@ -8,6 +8,6 @@
  * Activity with a path should cause an Activity without a path to get swapped
  * out
  */
-function ActivityStateManager() {}
+function ActivityLifecycleManager() {}
 
-ActivityStateManager.prototype.register_activity_id
+ActivityLifecycleManager.prototype.register_activity_id
