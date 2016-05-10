@@ -36,15 +36,13 @@ Bootloader.prototype.boot = function() {
     // unique id and hide them
     this.init_activities();
 
-    // initialize the router
+    // initialize the router with the current super activity; which should be
+    // safely tucked away in jmvc.super_activity by now.  The
+    // init_super_actvity() would have done that hopefully
+    jmvc.router.init();
 
     // boot the main activity
-    try {
-        jmvc.super_activity.boot();
-    } catch (err) {
-        console.log("Error in booting the library, exiting ...");
-        throw err;
-    }
+    jmvc.super_activity.boot();
 };
 
 /**
@@ -56,8 +54,10 @@ Bootloader.prototype.boot = function() {
  * responsible for the lifecycle of all the activities on the page.
  */
 Bootloader.prototype.init_super_actvity = function() {
-    $("body").wrapInner("<Activity controller=\"" 
-            + jmvc.CONFIG.SUPER_ACTIVITY + "\"></Activity>");
+    $("body").wrapInner(`
+        <Activity controller="${jmvc.CONFIG.SUPER_ACTIVITY}">
+        </Activity>
+    `);
     jmvc.super_activity = new window[jmvc.CONFIG.SUPER_ACTIVITY](0);
 };
 

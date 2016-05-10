@@ -8,20 +8,10 @@ function FinishMeActivity(id_in) {
 }
 FinishMeActivity.prototype = new Activity();
 
-FinishMeActivity.prototype.after_show = function() {
-    console.log("called after show");
-    this.wire_up_widgets();
-}
+FinishMeActivity.prototype.activity_will_load = function() {
+    console.log("FinishMeActivity.activity_will_load()");
+};
 
-FinishMeActivity.prototype.wire_up_widgets = function() {
-    this.button = $("#home_controller_button_finish");
-
-    this.button.click(function() {
-        NProgress.done(true);
-    });
-    $("#hide_finish_button").click(function() {
-        console.log("hellO");
-        jmvc.router.switch_to("click");
-    }.bind(this));
-
-}
+FinishMeActivity.prototype.render = function() {
+    console.log("FinishMeActivity.render()");
+};

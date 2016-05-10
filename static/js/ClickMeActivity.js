@@ -8,19 +8,10 @@ function ClickMeActivity(id_in) {
 }
 ClickMeActivity.prototype = new Activity();
 
-ClickMeActivity.prototype.after_show = function() {
-    this.wire_up_widgets();
-}
+ClickMeActivity.prototype.activity_will_load = function() {
+    console.log("ClickMeActivity.activity_will_load()");
+};
 
-ClickMeActivity.prototype.wire_up_widgets = function() {
-    this.button = $("#home_controller_button");
-
-    this.button.click(function() {
-        NProgress.configure({ showSpinner: true });
-        NProgress.start();
-        NProgress.inc(0.2);
-    });
-    $("#hide_click_button").click(function() {
-        jmvc.router.switch_to("index");
-    }.bind(this));
-}
+ClickMeActivity.prototype.render = function() {
+    console.log("ClickMeActivity.render");
+};

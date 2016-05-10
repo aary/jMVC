@@ -46,6 +46,11 @@ function Activity(id_in) {
 
     // lists of child activities
     this.child_activities = [];
+
+    // contains the text that was rendered by this activity at first, the text
+    // is replaced only when the render function returns something different,
+    // at which point the usual bootstrapping methods are called.
+    this.current_render = undefined;
 }
 
 /**
@@ -95,24 +100,11 @@ Activity.prototype.activity_will_disappear = function() {};
  */
 Activity.prototype.boot = function() {
     
-    console.log("booting activity with id ", this.id);
-    
     // call the activity_will_load method
     this.activity_will_load();
 
     // render the activity into the dom
     this.render_impl();
-
-    // call the bootstrapping method to init activities that may have just
-    // been rendered
-    jmvc.bootloader.init_activities();
-
-    // track the children and then call the boot function for each of the
-    // children.  DFS FTW
-    this.register_children();
-    $.each(this.child_activities, function(index, value) {
-        value.boot();
-    });
 };
 
 /**
@@ -122,7 +114,43 @@ Activity.prototype.boot = function() {
 Activity.prototype.render_impl = function() {
     assert(this.id !== undefined);
 
-    $("#" + this.id).prepend(this.render());
+    // add in a child element containing the things that are rendered
+    if (this.current_render === undefined) {
+        $("#" + this.id).prepend(`
+            <div id='activityrender${this.id}'>
+            </div>
+        `);
+    }
+
+    // if the current render is not the same as the initial render then
+    // that render is replaced with the new one, maybe I will add in a
+    // virtual DOM later on, though it should be easy, since the initial
+    // render does not have ids, all that is needed is to output the diff of
+    // the initial render and the current render, but I am lazy so TODO but
+    // please do actually do it
+    var new_render = this.render();
+    if (new_render != this.current_render || 
+            this.current_render === undefined) {
+        this.current_render = new_render;
+        $(`#activityrender${this.id}`).html(this.current_render);
+    }
+
+    // call the bootstrapping method to init activities that may have just
+    // been rendered
+    jmvc.bootloader.init_activities();
+
+    // track the children and then call the boot function for each of the
+    // children.  DFS FTW
+    this.register_children();
+    $.each(this.child_activities, function(index, child_activity) {
+
+        // the EECS 281 in me does not want to do this, it wants to keep a
+        // separate list for better performance but whatevs
+        if (!child_activity.initialized) {
+            child_activity.object.boot();
+            child_activity.initialized = true;
+        }
+    });
 };
 
 /**
@@ -154,6 +182,10 @@ Activity.prototype.register_children = function() {
         // get the controller type from them
         var id_child = $(value).attr("id");
         var controller_child = $(value).attr("controller");
-        this.child_activities.push(new window[controller_child](id_child));
+        this.child_activities.push({
+            "object" : new window[controller_child](id_child),
+            "id" : id_child,
+            "initialized" : false
+        });;
     }.bind(this));
 };

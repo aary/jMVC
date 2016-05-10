@@ -1,10 +1,13 @@
 function JmvcActivity(id_in) {
     // call the constructor for the base class
     Activity.call(this, id_in);
-    console.log("constructing super");
-}
+};
 JmvcActivity.prototype = new Activity();
 
+JmvcActivity.prototype.activity_will_load = function() {
+    console.log("JmvcActivity.activity_will_load()");
+};
+
 JmvcActivity.prototype.render = function() {
-    return "<h1>Hello World</h1>"
-}
+    console.log("JmvcActivity.render()");
+};

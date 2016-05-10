@@ -9,7 +9,12 @@ function MainActivity(id_in) {
 }
 MainActivity.prototype = new Activity();
 
+MainActivity.prototype.activity_will_load = function() {
+    console.log("MainActivity.activity_will_load()");
+};
+
 MainActivity.prototype.render = function() {
+    console.log("MainActivity.render()");
     return `
         <Activity controller='ClickMeActivity'>
         </Activity>
