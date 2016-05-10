@@ -104,5 +104,15 @@ Activity.prototype.boot = function() {
  *        into the DOM
  */
 Activity.prototype.render_impl = function() {
-    
+    assert(this.id !== undefined);
+    console.log("Rendering impl"); 
+
+    $("#" + this.id).prepend(this.render());
+};
+
+/**
+ * \brief show_views Shows the views for the activity on the screen.  Edit
+ * config options to make the activity fade into sight
+ */
+Activity.prototype.show_views = function() {
 };

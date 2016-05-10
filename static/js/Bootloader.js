@@ -36,6 +36,9 @@ Bootloader.prototype.boot = function() {
     this.init_activities();
 
     // initialize the router
+
+    // boot the main activity
+    jmvc.super_activity.boot();
 };
 
 /**

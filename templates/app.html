@@ -46,19 +46,8 @@
 
         <Activity controller="MainActivity" path="index">
             <div class="container">
-                <Activity path="click" controller="ClickMeActivity">
-                    <button id="home_controller_button" class="btn btn-default
-                        btn-lg">Click me!</button>
-                    <button id="hide_click_button" class="btn btn-default
-                        btn-lg">Hide click button</button>
-
-                    <Activity path="finish" controller="FinishMeActivity">
-                        <button id="home_controller_button_finish" class="btn
-                            btn-default btn-lg">Click me to finish
-                            loading!</button>
-                        <button id="hide_finish_button" class="btn btn-default
-                            btn-lg">Hide finish button</button>
-                    </Activity>
+                <Activity path="click" controller="ClickMeActivity" />
+                    <Activity path="finish" controller="FinishMeActivity" />
                 </Activity>
             </div>
         </Activity>

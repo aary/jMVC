@@ -4,3 +4,7 @@ function JmvcActivity(id_in) {
     console.log("constructing super");
 }
 JmvcActivity.prototype = new Activity();
+
+JmvcActivity.prototype.render = function() {
+    return "<h1>Hello World</h1>"
+}
