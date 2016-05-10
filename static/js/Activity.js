@@ -1,11 +1,11 @@
-/*
+/**
  * \file Activity.js
  * \author Aaryaman Sagar (rmn100@gmail.com)
  * \brief The Activity controller module
  *
  * This module contains the code for an activity.  An Activity is modeled off
  * of the Android activity class.  An activity is the current state of the app
- * on the browser screen.  Only one activity is to stay on screen at a time.
+ * on the browser screen.  Only one activity is to stay on screen at a time
  *
  *
  *      Lifecycle methods 
@@ -54,15 +54,15 @@ function Activity(id_in) {
 }
 
 /**
- * \brief activity_will_load This function is called right before the activity
- *        is brought into existance.  This function is called only once in the
- *        lifecycle of the application.
+ * \brief This function is called right before the activity is brought into
+ *        existance.  This function is called only once in the lifecycle of the
+ *        application.
  */
 Activity.prototype.activity_will_load = function() {};
 
 /** 
- * \brief render Returns a string consisting of the html that is to be embedded
- *        into the activity.
+ * \brief Returns a string consisting of the html that is to be embedded into
+ *        the activity.
  * \return returns the value that is going to be embedded into the activity.
  *         This can also return HTML with child activities.
  */
@@ -75,14 +75,13 @@ Activity.prototype.render = function() {};
 Activity.prototype.activity_did_render = function() {};
 
 /**
- * \brief activity_will_update Called right after the user calls the set_context
- *        method to set the context used by the templates
+ * \brief Called right after the user calls the set_context method to set the
+ *        context used by the templates
  */
 Activity.prototype.activity_will_update = function() {};
 
 /**
- * \brief activity_will_disappear Called right when the activity goes out of
- * sight of the user window.  
+ * \brief Called right when the activity goes out of sight of the user window.
  *
  * Either when a transition is made to another activity, the user scrolls or
  * when a tab is switched in the browser.  The library hooks into the browser
@@ -91,8 +90,7 @@ Activity.prototype.activity_will_update = function() {};
 Activity.prototype.activity_will_disappear = function() {};
 
 /**
- * \brief boot Called by the bootloader when the application loads in the
- *        browser
+ * \brief Called by the bootloader when the application loads in the browser
  *
  * This sets up the DOM, if the render() method has been overloaded to provide
  * a UI.  This also implies that this function is recursive in nature and
@@ -108,8 +106,7 @@ Activity.prototype.boot = function() {
 };
 
 /**
- * \brief render_impl calls the activity.render method to inject the content
- *        into the DOM
+ * \brief calls the activity.render method to inject the content into the DOM
  */
 Activity.prototype.render_impl = function() {
     assert(this.id !== undefined);
@@ -129,8 +126,10 @@ Activity.prototype.render_impl = function() {
     // the initial render and the current render, but I am lazy so TODO but
     // please do actually do it
     var new_render = this.render();
-    if (new_render != this.current_render || 
-            this.current_render === undefined) {
+    if (new_render != this.current_render) {
+
+        assert(new_render.indexOf("path") === -1, 
+                "Cannot add a route to the DOM dynamically");
         this.current_render = new_render;
         $(`#activityrender${this.id}`).html(this.current_render);
     }
@@ -154,15 +153,15 @@ Activity.prototype.render_impl = function() {
 };
 
 /**
- * \brief show_views Shows the views for the activity on the screen.  Edit
- * config options to make the activity fade into sight
+ * \brief Shows the views for the activity on the screen.  Edit config options
+ *        to make the activity fade into sight
  */
 Activity.prototype.show_views = function() {
     $("#" + this.id).fadeIn(jmvc.CONFIG.FADE_MS);
 };
 
 /**
- * \brief register_children Walks through the DOM and registers all children
+ * \brief Walks through the DOM and registers all children
  *        that were there in static HTML or that were created on the render
  *        method. 
  *

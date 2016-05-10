@@ -12,6 +12,15 @@
 
 function Router() {}
 
+/** 
+ * \brief Boots the router.  Called by the bootloader.
+ *
+ * This walks the DOM and sets up the inverted index from pathnames to the
+ * path that is to be taken to get there and stores said inverted index as a
+ * member variable in the router
+ */
+Router.prototype.boot = function() {};
+
 /**
  * \brief Called by the boot loader when the page loads
  *
@@ -44,37 +53,6 @@ Router.prototype.switch_to = function(activity_path) {
     // get the path corresponding to the activity id and route to it
     var path = this.inverted_index_activity_path[activity_path];
     this.route_to(path);
-}
-
-/** 
- * \brief Gets the public state for the activity encoded in the url as a JSON 
- *        object 
- */
-Router.prototype.get_public_activity_state = function() {
-
-    try {
-        // Get the string before the 
-        var public_state = window.location.hash.split("#/")[1].split("?")[1];
-        return JSON.parse(public_state);
-    } catch (err) {
-        return {};
-    }
-};
-
-/**
- * \brief Called when an activity changes its public state 
- */
-Router.prototype.set_public_activity_state = function(
-        public_activity_state) {
-
-    // set the link after the hash tag to match the state of the object
-    // Change this from pure JSON to url encoded JSON maybe?
-    try {
-        window.location.hash = this.get_url_from_path(this.current_path) +
-            "?" + JSON.stringify(public_activity_state);
-    } catch (err) {
-        // noop
-    }
 };
 
 /**************************************************************************
@@ -102,7 +80,6 @@ Router.prototype.get_path_from_url = function(url) {
 Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
 }
-
 /**************************************************************************
  *                          PRIVATE METHODS                               *
  **************************************************************************/

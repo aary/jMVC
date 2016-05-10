@@ -1,7 +1,6 @@
 /**
  * \file DomHelper.js
  * \author Aaryaman Sagar (rmn100@gmail.com)
- *
  * \brief This module contains extra methods that might be helpful in the
  *        context of this library that jQuery does not provide.
  *

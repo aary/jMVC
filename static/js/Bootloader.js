@@ -1,6 +1,5 @@
-/*
+/**
  * \file Bootloader.js
- *
  * \brief This file contains the initialization code for the library
  *
  * For example this contains the code to make all activities invisible to
@@ -19,7 +18,7 @@ $(document).ready(function() {
     jmvc.bootloader.boot(); // to be explicit
 });
 
-/* 
+/**
  * \brief Boot function.  This function initializes the library. 
  */
 Bootloader.prototype.boot = function() {
@@ -30,19 +29,18 @@ Bootloader.prototype.boot = function() {
 
     // initialize a super activity that wraps around every other activity,
     // this is done for convenience in routing
-    this.init_super_actvity();
+    this.init_super_activity();
 
     // render basic activity state for all the activities out there, like the
     // unique id and hide them
     this.init_activities();
 
-    // initialize the router with the current super activity; which should be
-    // safely tucked away in jmvc.super_activity by now.  The
-    // init_super_actvity() would have done that hopefully
-    jmvc.router.init();
-
     // boot the main activity
-    jmvc.super_activity.boot();
+    this.boot_super_activity();
+
+    // initialize the router with the current super activity; which should be
+    // safely tucked away in jmvc.super_activity by now.
+    jmvc.router.boot();
 };
 
 /**
@@ -53,12 +51,16 @@ Bootloader.prototype.boot = function() {
  * DRY (don't repeat yourself).  This anonymous super activity then becomes
  * responsible for the lifecycle of all the activities on the page.
  */
-Bootloader.prototype.init_super_actvity = function() {
+Bootloader.prototype.init_super_activity = function() {
     $("body").wrapInner(`
         <Activity controller="${jmvc.CONFIG.SUPER_ACTIVITY}">
         </Activity>
     `);
-    jmvc.super_activity = new window[jmvc.CONFIG.SUPER_ACTIVITY](0);
+
+    if (jmvc.activities === undefined) {
+        jmvc.activities = {};
+    }
+    jmvc.activities["0"] = new window[jmvc.CONFIG.SUPER_ACTIVITY](0);
 };
 
 /**
@@ -73,6 +75,14 @@ Bootloader.prototype.init_activities = function() {
     this.hide_activities(activities_without_ids);
     this.set_unique_ids(activities_without_ids);
 }
+
+/**
+ * \brief Calls the boot method on the super activity that then in turn calls
+ *        the boot method on all children
+ */
+Bootloader.prototype.boot_super_activity = function() {
+    jmvc.activities[0].boot();
+};
 
 /**
  * \brief Hides all the activities passed in
