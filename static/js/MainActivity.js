@@ -9,6 +9,9 @@ function MainActivity(id_in) {
 }
 MainActivity.prototype = new Activity();
 
-MainActivity.prototype.after_show = function() {
-    this.wire_up_widgets();
-}
+MainActivity.prototype.render = function() {
+    return `
+        <Activity controller='ClickMeActivity'>
+        </Activity>
+    `
+};

@@ -32,13 +32,19 @@ Bootloader.prototype.boot = function() {
     // this is done for convenience in routing
     this.init_super_actvity();
 
-    // render basic activity state for all the activities out there
+    // render basic activity state for all the activities out there, like the
+    // unique id and hide them
     this.init_activities();
 
     // initialize the router
 
     // boot the main activity
-    jmvc.super_activity.boot();
+    try {
+        jmvc.super_activity.boot();
+    } catch (err) {
+        console.log("Error in booting the library, exiting ...");
+        throw err;
+    }
 };
 
 /**
@@ -50,7 +56,7 @@ Bootloader.prototype.boot = function() {
  * responsible for the lifecycle of all the activities on the page.
  */
 Bootloader.prototype.init_super_actvity = function() {
-    $("Activity").wrapAll("<Activity controller=\"" 
+    $("body").wrapInner("<Activity controller=\"" 
             + jmvc.CONFIG.SUPER_ACTIVITY + "\"></Activity>");
     jmvc.super_activity = new window[jmvc.CONFIG.SUPER_ACTIVITY](0);
 };
