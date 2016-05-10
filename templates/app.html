@@ -46,8 +46,11 @@
 
         <Activity controller="MainActivity" path="index">
             <div class="container">
-                <Activity path="click" controller="ClickMeActivity" />
-                    <Activity path="finish" controller="FinishMeActivity" />
+                <Activity path="click" controller="ClickMeActivity">
+                    <button class="btn btn-default">Load</button>
+                    <Activity path="finish" controller="FinishMeActivity">
+                        <button class="btn btn-default">Finish</button>
+                    </Activity>
                 </Activity>
             </div>
         </Activity>
