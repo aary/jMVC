@@ -3,7 +3,12 @@
  * \author Aaryaman Sagar (rmn100@gmail.com)
  *
  * \brief This module contains extra methods that might be helpful in the
- *        context of this library that jQuery does not provide
+ *        context of this library that jQuery does not provide.
+ *
+ * Most of the methods provided in this module are static.  The philosophy
+ * being that there is already a global 'DomHelper' set in the window so there
+ * is no point in setting another global singleton.  Correct me if this in
+ * inconsistent with the other parts of the library however.
  */
 
 /* Only contains static functions so this is a namespace and not a class */
