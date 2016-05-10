@@ -28,6 +28,10 @@
  *      activity_will_disappear();
  */
 
+/*
+ * \class Activity
+ * \brief The main view controller class for this library
+ */
 function Activity(id_in) {
 
     // Set the public ID for the current activity, this should correspond
