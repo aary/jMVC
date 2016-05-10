@@ -11,7 +11,7 @@
  *      Lifecycle methods 
  *
  * These are called at times specified by the library to initialize and load
- * an activity
+ * an activity.
  *
  * The three cases when these functions are called are 
  *  
