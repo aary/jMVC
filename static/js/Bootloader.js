@@ -57,6 +57,7 @@ Bootloader.prototype.init_super_activity = function() {
         </Activity>
     `);
 
+    // add the super activity to the list of activities
     if (jmvc.activities === undefined) {
         jmvc.activities = {};
     }

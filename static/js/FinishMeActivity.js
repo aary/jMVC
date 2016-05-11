@@ -8,10 +8,22 @@ function FinishMeActivity(id_in) {
 }
 FinishMeActivity.prototype = new Activity();
 
-FinishMeActivity.prototype.activity_will_load = function() {
-    console.log("FinishMeActivity.activity_will_load()");
+FinishMeActivity.prototype.activity_will_boot = function() {
+    console.log("FinishMeActivity.activity_will_boot()");
+};
+
+FinishMeActivity.prototype.activity_will_render = function() {
+    console.log("FinishMeActivity.activity_will_render()");
 };
 
 FinishMeActivity.prototype.render = function() {
     console.log("FinishMeActivity.render()");
+};
+
+FinishMeActivity.prototype.activity_did_render = function() {
+    console.log("FinishMeActivity.activity_did_render()");
+};
+
+FinishMeActivity.prototype.activity_did_boot = function() {
+    console.log("FinishMeActivity.activity_did_boot()");
 };

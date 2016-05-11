@@ -16,11 +16,14 @@
  * The three cases when these functions are called are 
  *  
  *  1. When the library loads.
- *      activity_will_load();
+ *      activity_will_boot();
+ *      activity_will_render();
  *      render();
  *      activity_did_render();
+ *      activity_did_boot();
  *
  *  2. When the user calls set_context()
+ *      activity_will_render();
  *      render();
  *      activity_did_render();
  *
@@ -50,6 +53,8 @@ function Activity(id_in) {
 
     // lists of child activities
     this.child_activities = [];
+    this.child_activities_without_path = [];
+    this.child_activities_with_path = [];
 
     // contains the text that was rendered by this activity at first, the text
     // is replaced only when the render function returns something different,
@@ -62,7 +67,12 @@ function Activity(id_in) {
  *        existance.  This function is called only once in the lifecycle of the
  *        application.
  */
-Activity.prototype.activity_will_load = function() {};
+Activity.prototype.activity_will_boot = function() {};
+
+/**
+ * \brief This function is called right before the activity is going to render
+ */
+Activity.prototype.activity_will_render = function() {};
 
 /** 
  * \brief Returns a string consisting of the html that is to be embedded into
@@ -78,11 +88,11 @@ Activity.prototype.render = function() {};
  */
 Activity.prototype.activity_did_render = function() {};
 
-/**
- * \brief Called right after the user calls the set_context method to set the
- *        context used by the templates
+/** 
+ * \brief Called once and only once when the activity has finished booting.  
+ *        This is called after the activity_did_render method.
  */
-Activity.prototype.activity_will_update = function() {};
+Activity.prototype.activity_did_boot = function() {};
 
 /**
  * \brief Called right when the activity goes out of sight of the user window.
@@ -102,11 +112,24 @@ Activity.prototype.activity_will_disappear = function() {};
  */
 Activity.prototype.boot = function() {
     
-    // call the activity_will_load method
-    this.activity_will_load();
+    // call the activity_will_boot method
+    this.activity_will_boot();
 
-    // render the activity into the dom
+    // render the activity into the dom, after this the activities should be
+    // set in the DOM, this activity should then track the children that need
+    // to render when this activity shows by default.  i.e. all the activities
+    // with no path.  The show_impl() method will be called by the
+    // infrastructure when the library needs to show a route.  In that case
+    // all the activities without a path and that one activity with an id
+    // should show
     this.render_impl();
+
+    // Now call the activity_did_boot, each child has already booted and as a
+    // result has already called activity_did_boot()
+    this.activity_did_boot();
+
+    // show the activity, only for testing
+    this.show_views();
 };
 
 /**
@@ -115,11 +138,14 @@ Activity.prototype.boot = function() {
 Activity.prototype.render_impl = function() {
     assert(this.id !== undefined);
 
+    // call the activity_will_render function
+    this.activity_will_render();
+
     // add in a child element containing the things that are rendered
     if (this.current_render === undefined) {
         $("#" + this.id).prepend(`
-            <div id='activityrender${this.id}'>
-            </div>
+            <jmvc-placeholder id='activityrender${this.id}'>
+            </jmvc-placeholder>
         `);
     }
 
@@ -131,29 +157,22 @@ Activity.prototype.render_impl = function() {
     // please do actually do it
     var new_render = this.render();
     if (new_render != this.current_render) {
-
-        assert(new_render.indexOf("path") === -1, 
-                "Cannot add a route to the DOM dynamically");
+        this.validate_render(new_render);
         this.current_render = new_render;
         $(`#activityrender${this.id}`).html(this.current_render);
     }
 
     // call the bootstrapping method to init activities that may have just
-    // been rendered
+    // been rendered that have not already been initialized
     jmvc.bootloader.init_activities();
 
     // track the children and then call the boot function for each of the
     // children.  DFS FTW
     this.register_children();
-    $.each(this.child_activities, function(index, child_activity) {
+    this.boot_children();
 
-        // the EECS 281 in me does not want to do this, it wants to keep a
-        // separate list for better performance but whatevs
-        if (!child_activity.initialized) {
-            child_activity.object.boot();
-            child_activity.initialized = true;
-        }
-    });
+    // call activity_did_render
+    this.activity_did_render();
 };
 
 /**
@@ -176,7 +195,8 @@ Activity.prototype.show_views = function() {
  */
 Activity.prototype.register_children = function() {
     
-    // get the jQuery collection of children activities
+    // get the jQuery collection of children activities that are activities
+    // and are only one level deep
     var activity_array = DomHelper.immediate_children($("#" + this.id), 
             "Activity");
 
@@ -191,4 +211,31 @@ Activity.prototype.register_children = function() {
             "initialized" : false
         });;
     }.bind(this));
+
+    // store the arrays that should be shown when this one is shown, i.e. ones
+    // without a route.  Only one of the activities that are children of this
+    // activity will be shown since the route can only be one thing at a time
+    this.child_activities_without_path = $("Activity:not([path])");
+    this.child_activities_with_path = $("Activity[path]");
+};
+
+/* Helper method to validate the template rendered by the user */
+Activity.prototype.validate_render = function(new_render) {
+    assert(new_render.indexOf("path") === -1, 
+            "Cannot add a route to the DOM dynamically");
+};
+
+/* Helper method that boots all the children activities one by one and sets
+ * them to initialized */
+Activity.prototype.boot_children = function() {
+
+    $.each(this.child_activities, function(index, child_activity) {
+
+        // the EECS 281 in me does not want to do this, it wants to keep a
+        // separate list for better performance but whatevs
+        if (!child_activity.initialized) {
+            child_activity.object.boot();
+            child_activity.initialized = true;
+        }
+    });
 };
