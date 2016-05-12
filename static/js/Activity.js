@@ -8,24 +8,27 @@
  * on the browser screen.  Only one activity is to stay on screen at a time
  *
  *
- *      Lifecycle methods 
+ * Lifecycle methods 
  *
  * These are called at times specified by the library to initialize and load
  * an activity.
  *
  * The three cases when these functions are called are 
  *  
- *  1. When the library loads.
+ *  1. When the library loads.  Every activity does this.
  *      activity_will_boot();
- *      activity_will_render();
  *      render();
- *      activity_did_render();
  *      activity_did_boot();
  *
+ *  2. When a routing occurs.  Do any AJAX calls in did_appear()
+ *      activity_will_appear(); // when the view comes on screen
+ *      activity_will_bind();
+ *      activity_did_bind();
+ *      activity_did_appear();
+ *
  *  2. When the user calls set_context()
- *      activity_will_render();
- *      render();
- *      activity_did_render();
+ *      activity_will_bind();
+ *      activity_did_bind();
  *
  *  3. When the activity goes out of sight
  *      activity_will_disappear();
@@ -60,7 +63,7 @@ function Activity(id_in) {
     // is replaced only when the render function returns something different,
     // at which point the usual bootstrapping methods are called.
     this.current_render = undefined;
-}
+};
 
 /**
  * \brief This function is called right before the activity is brought into
@@ -68,11 +71,6 @@ function Activity(id_in) {
  *        application.
  */
 Activity.prototype.activity_will_boot = function() {};
-
-/**
- * \brief This function is called right before the activity is going to render
- */
-Activity.prototype.activity_will_render = function() {};
 
 /** 
  * \brief Returns a string consisting of the html that is to be embedded into
@@ -82,17 +80,34 @@ Activity.prototype.activity_will_render = function() {};
  */
 Activity.prototype.render = function() {};
 
-/**
- * \brief activity_did_render Called right after the activity and all its child
- *        activities have been rendered on the screen.  
- */
-Activity.prototype.activity_did_render = function() {};
-
 /** 
  * \brief Called once and only once when the activity has finished booting.  
  *        This is called after the activity_did_render method.
  */
 Activity.prototype.activity_did_boot = function() {};
+
+/**
+ * \brief This function is called right before the activity is going to render
+ */
+Activity.prototype.activity_will_appear = function() {};
+
+/**
+ * \brief This function is called right before the activity is about to bind
+ *        its context with the template
+ */
+Activity.prototype.activity_will_bind = function() {};
+
+/**
+ * \brief activity_did_render Called right after the activity and all its child
+ *        activities have been rendered on the screen.  
+ */
+Activity.prototype.activity_did_bind = function() {};
+
+/**
+ * \brief activity_did_render Called right after the activity and all its child
+ *        activities have been rendered on the screen.  
+ */
+Activity.prototype.activity_did_appear = function() {};
 
 /**
  * \brief Called right when the activity goes out of sight of the user window.
@@ -122,7 +137,11 @@ Activity.prototype.boot = function() {
     // infrastructure when the library needs to show a route.  In that case
     // all the activities without a path and that one activity with an id
     // should show
+    this.prepare_render(); // writes a prepend element to the DOM
     this.render_impl();
+
+    // add this activity by id in the map from id to activity object
+    jmvc.activities[this.id] = this;
 
     // Now call the activity_did_boot, each child has already booted and as a
     // result has already called activity_did_boot()
@@ -138,17 +157,6 @@ Activity.prototype.boot = function() {
 Activity.prototype.render_impl = function() {
     assert(this.id !== undefined);
 
-    // call the activity_will_render function
-    this.activity_will_render();
-
-    // add in a child element containing the things that are rendered
-    if (this.current_render === undefined) {
-        $("#" + this.id).prepend(`
-            <jmvc-placeholder id='activityrender${this.id}'>
-            </jmvc-placeholder>
-        `);
-    }
-
     // if the current render is not the same as the initial render then
     // that render is replaced with the new one, maybe I will add in a
     // virtual DOM later on, though it should be easy, since the initial
@@ -157,9 +165,9 @@ Activity.prototype.render_impl = function() {
     // please do actually do it
     var new_render = this.render();
     if (new_render != this.current_render) {
-        this.validate_render(new_render);
+        this.assert_validate_render(new_render);
         this.current_render = new_render;
-        $(`#activityrender${this.id}`).html(this.current_render);
+        $(`#activityplaceholder${this.id}`).html(this.current_render);
     }
 
     // call the bootstrapping method to init activities that may have just
@@ -170,9 +178,18 @@ Activity.prototype.render_impl = function() {
     // children.  DFS FTW
     this.register_children();
     this.boot_children();
+};
 
-    // call activity_did_render
-    this.activity_did_render();
+/**
+ * \brief Writes a placeholder div in which the activity elements will go
+ */
+Activity.prototype.prepare_render = function() {
+
+    // add in a child element containing the things that are rendered
+    $("#" + this.id).prepend(`
+        <jmvc-placeholder id='activityplaceholder${this.id}'>
+        </jmvc-placeholder>
+    `);
 };
 
 /**
@@ -215,12 +232,14 @@ Activity.prototype.register_children = function() {
     // store the arrays that should be shown when this one is shown, i.e. ones
     // without a route.  Only one of the activities that are children of this
     // activity will be shown since the route can only be one thing at a time
-    this.child_activities_without_path = $("Activity:not([path])");
-    this.child_activities_with_path = $("Activity[path]");
+    this.child_activities_without_path = $(activity_array)
+        .filter("Activity:not([path])");
+    this.child_activities_with_path = $(activity_array)
+        .filter("Activity[path]");
 };
 
 /* Helper method to validate the template rendered by the user */
-Activity.prototype.validate_render = function(new_render) {
+Activity.prototype.assert_validate_render = function(new_render) {
     assert(new_render.indexOf("path") === -1, 
             "Cannot add a route to the DOM dynamically");
 };
