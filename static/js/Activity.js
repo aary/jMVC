@@ -1,11 +1,43 @@
-/*
- *      Activity.js
+/**
+ * \file Activity.js
+ * \author Aaryaman Sagar (rmn100@gmail.com)
+ * \brief The Activity controller module
  *
  * This module contains the code for an activity.  An Activity is modeled off
  * of the Android activity class.  An activity is the current state of the app
- * on the browser screen.  Only one activity is to stay on screen at a time.
+ * on the browser screen.  Only one activity is to stay on screen at a time
+ *
+ *
+ * Lifecycle methods 
+ *
+ * These are called at times specified by the library to initialize and load
+ * an activity.
+ *
+ * The three cases when these functions are called are 
+ *  
+ *  1. When the library loads.  Every activity does this.
+ *      activity_will_boot();
+ *      render();
+ *      activity_did_boot();
+ *
+ *  2. When a routing occurs.  Do any AJAX calls in did_appear()
+ *      activity_will_appear(); // when the view comes on screen
+ *      activity_will_bind();
+ *      activity_did_bind();
+ *      activity_did_appear();
+ *
+ *  2. When the user calls set_context()
+ *      activity_will_bind();
+ *      activity_did_bind();
+ *
+ *  3. When the activity goes out of sight
+ *      activity_will_disappear();
  */
 
+/*
+ * \class Activity
+ * \brief The main view controller class for this library
+ */
 function Activity(id_in) {
 
     // Set the public ID for the current activity, this should correspond
@@ -13,219 +45,232 @@ function Activity(id_in) {
     // frontend in the html
     this.id = id_in;
     if (this.id) {
-        assert($("Activity[path='" + this.id + "']").length, 
+        assert($("#" + this.id).length, 
                 "Id assigned to activity must exist");
     }
 
-    // this is the public state that the controller fetches from the hash link
-    // in the url in the browser
-    this.public_state = {};
+    // this is the context that the activity maintains.  This is linked to the
+    // default handlebars template present in the activity if any.  Otherwise
+    // it is ignored.  
+    this.context = {};
 
-    // This is the private state of the activity.  Store all data that is not
-    // public here
-    this.private_state = {};
+    // lists of child activities
+    this.child_activities = [];
+    this.child_activities_without_path = [];
+    this.child_activities_with_path = [];
 
-    // set this activity in the window
-    this.register_activity();
+    // contains the text that was rendered by this activity at first, the text
+    // is replaced only when the render function returns something different,
+    // at which point the usual bootstrapping methods are called.
+    this.current_render = undefined;
+};
+
+/**
+ * \brief This function is called right before the activity is brought into
+ *        existance.  This function is called only once in the lifecycle of the
+ *        application.
+ */
+Activity.prototype.activity_will_boot = function() { 
+    console.log(this["constructor"].name + ".activity_will_boot()");
 }
 
-/*
- *      Lifecycle methods
- *
- * These are divided into three different groups of lifecycle methods as follows
- *      1. When the activity is first being created; when the document loads;
- *         these are called by the Bootloader
- *      2. When the activity is going to be routed to by the Router.  These
- *         are typically analogous to the iOS viewWillAppear, viewDidAppear
- *         targets
- *      3. When the activity changes state, when the user calls the
- *         set_private_state methods on the activity
+/** 
+ * \brief Returns a string consisting of the html that is to be embedded into
+ *        the activity.
+ * \return returns the value that is going to be embedded into the activity.
+ *         This can also return HTML with child activities.
  */
-
-/* 
- * This should return the HTML for the page that should go within the script
- * tags for the activity.  Dynamic Activity updating is not supported as of
- * yet so this can not return HTML with the <Activity> tag.  That should be
- * encoded in HTML.  Handlebars should be used for dynamic behavior. 
- *
- * This is called by the library boot loader. 
- */
-Activity.prototype.boot = function() { return "" };
-
-/*
- * These are called when the activity is routed to by the Router class.  So
- * either when the url changes, the page is refreshed or when someone calls
- * the router.route_to() method that leads to this Activity.  
- *
- * Making a transition in the before_show stage is going to squash the current
- * activity from loading and reload the path from the not showed part onwards.
- * For example if this activity had the path /inbox/messages and we made a
- * router.transition("create") with the create activity being under inbox as
- * well.  The router would squash the event queue which previously would have
- * moved through the following stages
- *      [InboxActivity.before_show, InboxActivity.redraw, 
- *          InboxActivity.show, InboxActivity.after_show, 
- *          Messages.before_show, Messages.redraw, Messages.show,
- *          Messages.after_show] 
- *      ... All InboxActivity lifecycle methods get executed, router now has 
- *          [InboxActivity] in its active Activities section
- *      [Messages.before_show, Messages.redraw, Messages.show,
- *          Messages.after_show]
- *
- * Then if a transition was called the router would squash its queue and move
- * to the following
- *      [CreateActivity.before_show, CreateActivity.redraw,
- *          CreateActivity.show, CreateActivity.after_show]
- * Without calling the InboxActivity methods again since they had already been
- * called, since the activity is marked active.
- */
-Activity.prototype.before_show = function(previous_path) { console.log("before_show"); };
-Activity.prototype.redraw = function() { console.log("redraw"); };
-Activity.prototype.show = function() {};
-Activity.prototype.after_show = function() { console.log("after_show"); };
-
-Activity.prototype.events_for_show = function() {
-    var arr_events = [];
-    arr_events.push(this.before_show.bind(this));
-    arr_events.push(this.redraw.bind(this));
-    arr_events.push(this.show.bind(this));
-    arr_events.push(this.after_show.bind(this));
-    arr_events.push(this.id);
-    return arr_events;
+Activity.prototype.render = function() {
+    console.log(this["constructor"].name + ".render()");
 };
 
-Activity.prototype.before_hide = function() {};
-Activity.prototype.hide = function() {};
-Activity.prototype.after_hide = function() {};
-
-Activity.prototype.events_for_hide = function() {
-    var arr_events = [];
-    arr_events.push(this.before_hide.bind(this));
-    arr_events.push(this.hide.bind(this));
-    arr_events.push(this.after_hide.bind(this));
-    arr_events.push(this.id);
-    return arr_events;
+/** 
+ * \brief Called once and only once when the activity has finished booting.  
+ *        This is called after the activity_did_render method.
+ */
+Activity.prototype.activity_did_boot = function() {
+    console.log(this["constructor"].name + ".activity_did_boot()");
 };
 
-/* 
- * These are called when the user calls set_private_state() on the activity.
- * This is the first method in a trio of methods that are called for the
- * activity.  Returning a false on should_update will not update the activity.
+/**
+ * \brief This function is called right before the activity is going to render
  */
-Activity.prototype.should_update = function() { return true; };
-Activity.prototype.before_update = function() { return undefined; };
-Activity.prototype.redraw = function() { console.log("redraw"); };
-Activity.prototype.after_update = function() { return undefined; };
+Activity.prototype.activity_will_appear = function() {
+    console.log(this["constructor"].name + ".activity_will_appear()");
+};
 
-/*
- * Used to redraw the screen.  
- *
- * Usually all that would need to go here is a call to
- * redraw_handlebar_template_with_context() with the appropriate Handlebars
- * context.  For more information on how to use Handlebars consult Google.
- *
- * ** This is not called by the library, you are in charge of calling this.
- *    This function has been put here simply as a style guideline.  **
+/**
+ * \brief This function is called right before the activity is about to bind
+ *        its context with the template
  */
+Activity.prototype.activity_will_bind = function() {
+    console.log(this["constructor"].name + ".activity_will_bind()");
+};
 
-/*
- * Used to link all the widgets on the screen to possible callbacks.  For
- * example if the redraw() function was used to place several buttons on the
- * screen then you would set up the callback for click events on the button
- * here
- *
- * ** This is not called by the library, you are in charge of calling this.
- *    This function has been put here simply as a style guideline.  **
+/**
+ * \brief activity_did_render Called right after the activity and all its child
+ *        activities have been rendered on the screen.  
  */
-Activity.prototype.wire_up_widgets = function() {};
+Activity.prototype.activity_did_bind = function() {
+    console.log(this["constructor"].name + ".activity_did_bind()");
+};
 
-/*
- * Used to show the views on the screen, if called with a null parameter
- * or no parameter at all then this does not fade the views in.  Otherwise
- * the parameter should be the number of milliseconds the fading in of the
- * views should take.
+/**
+ * \brief activity_did_render Called right after the activity and all its child
+ *        activities have been rendered on the screen.  
+ */
+Activity.prototype.activity_did_appear = function() {
+    console.log(this["constructor"].name + ".activity_did_appear()");
+};
+
+/**
+ * \brief Called right when the activity goes out of sight of the user window.
  *
- * This should be the final thing that is called in the loading process for an
- * activity.  For example if you are loading data via AJAX calls, you would
- * wait for that data to be fetched and then you would render any templates
- * you may have with the redraw_handlebar_template_with_context() function.
- * After that this function should be called to show all of the views for the
- * activity on the screen.
+ * Either when a transition is made to another activity, the user scrolls or
+ * when a tab is switched in the browser.  The library hooks into the browser
+ * using the browser's API and calls this method in the hook
+ */
+Activity.prototype.activity_will_disappear = function() {
+    console.log(this["constructor"].name + ".activity_will_disappear()");
+};
+
+/**
+ * \brief Called by the bootloader when the application loads in the browser
+ *
+ * This sets up the DOM, if the render() method has been overloaded to provide
+ * a UI.  This also implies that this function is recursive in nature and
+ * traverses the DOM dynamically to initialize all the activities
+ */
+Activity.prototype.boot = function() {
+    
+    // call the activity_will_boot method
+    this.activity_will_boot();
+
+    // render the activity into the dom, after this the activities should be
+    // set in the DOM, this activity should then track the children that need
+    // to render when this activity shows by default.  i.e. all the activities
+    // with no path.  The show_impl() method will be called by the
+    // infrastructure when the library needs to show a route.  In that case
+    // all the activities without a path and that one activity with an id
+    // should show
+    this.prepare_render(); // writes a prepend element to the DOM
+    this.render_impl();
+
+    // add this activity by id in the map from id to activity object
+    jmvc.activities[this.id] = this;
+
+    // Now call the activity_did_boot, each child has already booted and as a
+    // result has already called activity_did_boot()
+    this.activity_did_boot();
+
+    // show the activity, only for testing
+    this.show_views();
+};
+
+/**
+ * \brief calls the activity.render method to inject the content into the DOM
+ */
+Activity.prototype.render_impl = function() {
+    assert(this.id !== undefined);
+
+    // if the current render is not the same as the initial render then
+    // that render is replaced with the new one, maybe I will add in a
+    // virtual DOM later on, though it should be easy, since the initial
+    // render does not have ids, all that is needed is to output the diff of
+    // the initial render and the current render, but I am lazy so TODO but
+    // please do actually do it
+    var new_render = this.render();
+    if (new_render != this.current_render) {
+        this.assert_validate_render(new_render);
+        this.current_render = new_render;
+        $(`#activityplaceholder${this.id}`).html(this.current_render);
+    }
+
+    // call the bootstrapping method to init activities that may have just
+    // been rendered that have not already been initialized
+    jmvc.bootloader.init_activities();
+
+    // track the children and then call the boot function for each of the
+    // children.  DFS FTW
+    this.register_children();
+    this.boot_children();
+};
+
+/**
+ * \brief Writes a placeholder div in which the activity elements will go
+ */
+Activity.prototype.prepare_render = function() {
+
+    // add in a child element containing the things that are rendered
+    $("#" + this.id).prepend(`
+        <jmvc-placeholder id='activityplaceholder${this.id}'>
+        </jmvc-placeholder>
+    `);
+};
+
+/**
+ * \brief Shows the views for the activity on the screen.  Edit config options
+ *        to make the activity fade into sight
  */
 Activity.prototype.show_views = function() {
-    
-    // remove the preliminary status bar
-    jmvc.router.remove_progress_bar();
-    $("Activity[path='" + this.id + "']").fadeIn(jmvc.CONFIG.FADE_MS);
+    $("#" + this.id).fadeIn(jmvc.CONFIG.FADE_MS);
 };
 
-/*
- * A utility function that can be used to redraw the handlebar template
- * with the given id and put the resulting html in the given placeholder
- * with the given context
+/**
+ * \brief Walks through the DOM and registers all children
+ *        that were there in static HTML or that were created on the render
+ *        method. 
+ *
+ * This method uses jQuery to find all the children Activity elements and then
+ * constructs the appropriate activities for them based on their 'controller'
+ * attribute.  If there is an error in the HTML this throws an exception that
+ * is caught by the bootloader which then quits.
  */
-Activity.prototype.redraw_handlebar_template_with_context = function(template,
-        placeholder, context) {
-
-    // execute the 4 necessary steps
-    var the_template_script = $(template).html(); 
-    var the_template = Handlebars.compile(the_template_script);
-    var compiled_html = the_template(context);
-    $(placeholder).html(compiled_html);
-};
-
-/**************************************************************************
- * PRIVATES
-/*************************************************************************/
-/* Use this to hide the activity from sight */
-Activity.prototype.hide = function(milli_seconds_to_fade_out) {
-
-    // Hide views from screen
-    if (typeof milli_seconds_to_fade_out === 'undefined') {
-        $("Activity[path='" + this.id + "']").hide();
-    } else {
-        $("Activity[path='" + this.id + "']").fadeOut(milli_seconds_to_fade_out);
-    }
-};
-
-/*
- * Use this function to show the views for this activity on the screen,
- * the private_state_in parameter can be used to pass in data to this
- * activity.
- */
-Activity.prototype.show = function() {
+Activity.prototype.register_children = function() {
     
-    // get the public state from the browser and set back the state of the
-    // browser to match the state of the activity.  This is done here even
-    // after getting the state from the browser for the case when the
-    // default public state is not even provided when the activity's show
-    // function is called
-    this.public_state = jmvc.router.get_public_activity_state();
-    console.log(this.public_state);
-    // jmvc.router.set_public_activity_state(this.public_state);
+    // get the jQuery collection of children activities that are activities
+    // and are only one level deep
+    var activity_array = DomHelper.immediate_children($("#" + this.id), 
+            "Activity");
 
-    // call the appropriate callback that the deriver can change to suit
-    // his AJAX-ridden motives, if he returns a string they want to switch
-    // to then switch and dont show the views for this screen
-    // NEED TO CALL show_views() to show things
-    this.show_views()
+    $.each(activity_array, function(index, value) {
+
+        // get the controller type from them
+        var id_child = $(value).attr("id");
+        var controller_child = $(value).attr("controller");
+        this.child_activities.push({
+            "object" : new window[controller_child](id_child),
+            "id" : id_child,
+            "initialized" : false
+        });;
+    }.bind(this));
+
+    // store the arrays that should be shown when this one is shown, i.e. ones
+    // without a route.  Only one of the activities that are children of this
+    // activity will be shown since the route can only be one thing at a time
+    this.child_activities_without_path = $(activity_array)
+        .filter("Activity:not([path])");
+    this.child_activities_with_path = $(activity_array)
+        .filter("Activity[path]");
 };
 
-/**************************************************************************
- * PRIVATES
-/*************************************************************************/
-Activity.prototype.set_public_state = function(public_state_in) {
-    this.public_state = public_state_in;
-    jmvc.router.set_public_activity_state(this.public_state);
-}
+/* Helper method to validate the template rendered by the user */
+Activity.prototype.assert_validate_render = function(new_render) {
+    assert(new_render.indexOf("path") === -1, 
+            "Cannot add a route to the DOM dynamically");
+};
 
-/* Links the activity to the window globally */
-Activity.prototype.register_activity = function() {
-    
-    if (this.id !== undefined) {
-        if (!("activities" in jmvc)) {
-            jmvc.activities = {};
+/* Helper method that boots all the children activities one by one and sets
+ * them to initialized */
+Activity.prototype.boot_children = function() {
+
+    $.each(this.child_activities, function(index, child_activity) {
+
+        // the EECS 281 in me does not want to do this, it wants to keep a
+        // separate list for better performance but whatevs
+        if (!child_activity.initialized) {
+            child_activity.object.boot();
+            child_activity.initialized = true;
         }
-        jmvc.activities[this.id] = this;
-    }
-}
+    });
+};

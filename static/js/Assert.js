@@ -1,7 +1,7 @@
 /*
- *      Assert.js
- *
- * This file provides simple a simple assert() function
+ * \file Assert.js
+ * \author Aaryaman Sagar (rmn100@gmail.com)
+ * \brief This file provides simple a simple assert() function
  */
 
 function assert(condition, message) {
@@ -11,6 +11,7 @@ function assert(condition, message) {
             var error = new Error(message);
             console.log(error.stack);
             alert(message + "\n" + error.stack);
+            throw error;
             return;
         }
         alert(message);

@@ -1,179 +1,130 @@
-/*
- *      Bootloader.js
+/**
+ * \file Bootloader.js
+ * \brief This file contains the initialization code for the library
  *
- * This file contains the initial code for the library, like making all views
- * invisible to start and to import all the needed library files into the html
- *
+ * For example this contains the code to make all activities invisible to
+ * start and to import all the needed library files into the html
  * Really wanted to call this Bootstrap.js but ...
  */
 
-/* link the library to the window */
+/* link the library to the window globally */
 window.jmvc = {};
 
 /* This class has all the boot methods */
 function Bootloader() {};
 
 $(document).ready(function() {
-    var bootloader = new Bootloader();
-    bootloader.boot(); // to be explicit
+    jmvc.bootloader = new Bootloader();
+    jmvc.bootloader.boot(); // to be explicit
 });
 
-/* Boot function.  This function initializes the library. */
+/**
+ * \brief Boot function.  This function initializes the library. 
+ */
 Bootloader.prototype.boot = function() {
 
+    var time_begin = Date.now();
+
     // the router make it a singleton
-    assert(!("router" in jmvc), "A router instance already exists in " + 
-            "window");
+    assert(!("router" in jmvc), "A router instance already exists");
     jmvc.router = new Router();
 
-    // hides activities
-    this.hide_activities();
+    // initialize a super activity that wraps around every other activity,
+    // this is done for convenience in routing
+    this.init_super_activity();
 
-    // initialize all the controllers and add them to the router
-    this.link_activities_to_router();
+    // render basic activity state for all the activities out there, like the
+    // unique id and hide them
+    this.init_activities();
 
-    // render basic activity state for all the activities out there
-    this.initialize_activities();
+    // boot the main activity
+    this.boot_super_activity();
 
-    // route to the appropriate activity
+    // initialize the router with the current super activity; which should be
+    // safely tucked away in jmvc.super_activity by now.  And then route to
+    // the appropriate activity
+    jmvc.router.boot();
     jmvc.router.route_to_current_activity();
+
+    var time_end = Date.now();
+    console.log("Milliseconds taken to boot : ", time_end - time_begin);
 };
 
-/* 
- * This function looks for all divs with the id jmvc-controller and makes them
- * all invisible.  This also adds all the controllers to the router
+/**
+ * \brief This sets up the parent activity for all the other activities in the
+ *        app.
+ *
+ * The benefit of having a super activity is that it makes this library code
+ * DRY (don't repeat yourself).  This anonymous super activity then becomes
+ * responsible for the lifecycle of all the activities on the page.
  */
-Bootloader.prototype.link_activities_to_router = function() {
+Bootloader.prototype.init_super_activity = function() {
+    $("body").wrapInner(`
+        <Activity path="" controller="${jmvc.CONFIG.SUPER_ACTIVITY}">
+        </Activity>
+    `);
 
-    // set up the big map, dont know if it is necessary
-    jmvc.router.set_path_to_activities(this.get_path_map_from_dom());
+    // add the super activity to the list of activities
+    if (jmvc.activities === undefined) {
+        jmvc.activities = {};
+    }
+    jmvc.activities["0"] = new window[jmvc.CONFIG.SUPER_ACTIVITY](0);
+};
 
-    // set inverted index
-    jmvc.router.inverted_index_activity_path = 
-        this.get_inverted_index_from_path_map(jmvc.router.path_to_activities);
-    console.log(jmvc.router.inverted_index_activity_path);
+/**
+ * \brief This sets up the activities that have been entered into the HTML
+ *        for the page at the moment.  Only operates on activities that do not
+ *        have ids.  Them not having ids implies that they have not been 
+ *        linked with their parent activities.
+ */
+Bootloader.prototype.init_activities = function() {
+
+    var activities_without_ids = $("Activity:not([id])");
+    this.hide_activities(activities_without_ids);
+    this.set_unique_ids(activities_without_ids);
 }
 
-/* These either call the boot() method or hide the activities */
-Bootloader.prototype.initialize_activities = function() {
-    $.each(jmvc.activities, function(key, value) {
-        $("Activity[path='" + key + "']").append(value.boot());
+/**
+ * \brief Calls the boot method on the super activity that then in turn calls
+ *        the boot method on all children
+ */
+Bootloader.prototype.boot_super_activity = function() {
+    jmvc.activities[0].boot();
+};
+
+/**
+ * \brief Hides all the activities passed in
+ * \param activities_without_ids The activities to hide
+ */
+Bootloader.prototype.hide_activities = function(activities_without_ids) {
+    assert(activities_without_ids !== undefined);
+
+    $.each(activities_without_ids, function(index, value) {
+        $(value).css("display", "none");
     });
 }
-Bootloader.prototype.hide_activities = function() {
-    $("Activity").css("display", "none");
-}
 
-/*******************************************************************************
- *                            PRIVATE HELPER METHODS                           *
- ******************************************************************************/
-/* Gets a map from the DOM that maps the paths to the activities they use */
-Bootloader.prototype.get_path_map_from_dom = function() {
-
-    var path_to_activity_children = {};
-
-    // first get all the objects that are at the top level
-    $.each(this.get_immediate_children_for($("body")), function(index, value) {
-
-        // extract the controller type and the path from the DOM element, make
-        // map for children of the element
-        var controller_for_value = $(value).attr("controller");
-        var path_for_value = $(value).attr("path");
-        path_to_activity_children[$(value).attr("path")] = {
-            "activity": 
-                new window[controller_for_value](path_for_value), 
-            "children": {}
-        };
-    }.bind(this));
-
-    // now loop through them and recurse, passing the children object into
-    // each one of the recursive calls
-    $.each(path_to_activity_children, function(path, value) {
-        this.get_path_map_from_dom_helper(path, value.children);
-    }.bind(this));
-
-    // console.log(path_to_activity_children);
-    return path_to_activity_children;
-};
-
-Bootloader.prototype.get_path_map_from_dom_helper = function(path, 
-        path_to_activity_children) {
-
-    // loop through and find all the children of the activity with path given
-    // add those to the children map
-    $.each(this.get_immediate_children_for(
-            $("Activity[path='" + path + "']")), function(index, value) {
-
-        var controller_for_value = $(value).attr("controller");
-        var path_for_value = $(value).attr("path");
-        path_to_activity_children[$(value).attr("path")] = {
-            "activity": 
-                new window[controller_for_value](path_for_value), 
-            "children": {}
-        };
-    }.bind(this));
-
-    // now recurse
-    $.each(path_to_activity_children, function(path, value) {
-        this.get_path_map_from_dom_helper(path, value.children);
-    }.bind(this));
-};
-
-/* 
- * Skips all the children for the given jQuery element that are not Activities
- * and returns the children of that element
+/**
+ * \brief This sets up all the activities passed in with unique ids
+ * \param activities_without_ids The activities to setup with ids
  */
-Bootloader.prototype.get_immediate_children_for = function(element) {
+Bootloader.prototype.set_unique_ids = function(activities_without_ids) {
+    assert(activities_without_ids !== undefined);
 
-    // the object to return
-    var array_of_children = [];
-
-    // call recursive implementation
-    this.get_immediate_children_for_helper(element, array_of_children);
-    return array_of_children;
-};
-Bootloader.prototype.get_immediate_children_for_helper = function(element, 
-        array_of_children) {
-
-    // loop through the children and add them to the list if they are
-    // activities, else recurse and find its children until hit either no more
-    // children
-    $.each($(element).children(), function(index, value) {
-        if ($(value).prop("tagName") == "ACTIVITY") {
-            array_of_children.push(value);
-        }
-        else {
-            this.get_immediate_children_for_helper(value, array_of_children);
-        }
+    $.each(activities_without_ids, function(index, value) {
+        assert($(value).attr("id") === undefined);
+        $(value).attr("id", this.unique_id());
     }.bind(this));
 };
 
-/* 
- * Gets an inverted index from the path to the broken up path, so for
- * a path 'messages' this returns ["", "inbox", "messages"] since the messages
- * route is found at /inbox/messages
+/**
+ * \brief Returns the next unique integer from the scope of the program
+ * \bug This only goes up until the highest integer that the current
+ *      JavaScript implementation can handle
  */
-Bootloader.prototype.get_inverted_index_from_path_map = function(path_map) {
-    var stack_path = [];
-    var inverted_index = {};
-    this.get_inverted_index_from_path_map_helper(path_map, stack_path, 
-            inverted_index);
-    return inverted_index;
-};
-
-Bootloader.prototype.get_inverted_index_from_path_map_helper = function(path_map, 
-        stack_path, inverted_index) {
-    $.each(path_map, function(key, value) {
-
-        // push the key onto the stack
-        stack_path.push(key);
-
-        // add the path for the current stack into the map
-        inverted_index[key] = stack_path.slice();
-        this.get_inverted_index_from_path_map_helper(value.children, stack_path, 
-            inverted_index);
-
-        // pop to add the next key
-        stack_path.pop();
-    }.bind(this));
+Bootloader.prototype.unique_id = function() {
+    if (this.counter === undefined) {
+        this.counter = 0;
+    }
+    return this.counter++;
 };

@@ -8,7 +8,12 @@ function MainActivity(id_in) {
     this.button_finish = {};
 }
 MainActivity.prototype = new Activity();
+MainActivity.prototype.constructor = MainActivity;
 
-MainActivity.prototype.after_show = function() {
-    this.wire_up_widgets();
-}
+MainActivity.prototype.render = function() {
+    console.log("MainActivity.render()");
+    return `
+        <Activity controller='ClickMeActivity'>
+        </Activity>
+    `
+};
