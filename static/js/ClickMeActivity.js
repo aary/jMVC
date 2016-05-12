@@ -7,24 +7,5 @@ function ClickMeActivity(id_in) {
     this.button = {};
 }
 ClickMeActivity.prototype = new Activity();
-
-ClickMeActivity.prototype.activity_will_boot = function() {
-    console.log("ClickMeActivity.activity_will_boot()");
-};
-
-ClickMeActivity.prototype.activity_will_render = function() {
-    console.log("ClickMeActivity.activity_will_render()");
-};
-
-ClickMeActivity.prototype.render = function() {
-    console.log("ClickMeActivity.render");
-};
-
-ClickMeActivity.prototype.activity_did_render = function() {
-    console.log("ClickMeActivity.activity_did_render()");
-};
-
-ClickMeActivity.prototype.activity_did_boot = function() {
-    console.log("ClickMeActivity.activity_did_boot()");
-};
+ClickMeActivity.prototype.constructor = ClickMeActivity;
 

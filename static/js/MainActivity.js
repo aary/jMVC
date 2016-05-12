@@ -8,14 +8,7 @@ function MainActivity(id_in) {
     this.button_finish = {};
 }
 MainActivity.prototype = new Activity();
-
-MainActivity.prototype.activity_will_boot = function() {
-    console.log("MainActivity.activity_will_boot()");
-};
-
-MainActivity.prototype.activity_will_render = function() {
-    console.log("MainActivity.activity_will_render()");
-};
+MainActivity.prototype.constructor = MainActivity;
 
 MainActivity.prototype.render = function() {
     console.log("MainActivity.render()");
@@ -24,12 +17,3 @@ MainActivity.prototype.render = function() {
         </Activity>
     `
 };
-
-MainActivity.activity_did_render = function() {
-    console.log("MainActivity.activity_did_render()");
-};
-
-MainActivity.activity_did_boot = function() {
-    console.log("MainActivity.activity_did_boot()");
-};
-

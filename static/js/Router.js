@@ -10,7 +10,12 @@
  * this purpose)
  */
 
-function Router() {}
+function Router() {
+
+    // a map from path to list of activity ids that have to go through for
+    // the path
+    this.path_ids = {};
+}
 
 /** 
  * \brief Boots the router.  Called by the bootloader.
@@ -19,7 +24,48 @@ function Router() {}
  * path that is to be taken to get there and stores said inverted index as a
  * member variable in the router
  */
-Router.prototype.boot = function() {};
+Router.prototype.boot = function() {
+    
+    // a stack for depth first searching
+    var stack = [];
+
+    // add the initial node and then loop, using stack because thats my only
+    // choice here
+    stack.push({
+        "id" : 0,
+        "parents" : []
+    });
+
+    // DFS
+    while (stack.length) {
+
+        // get the current node from the stack and get its children
+        var current_node = stack[stack.length - 1];
+        var current_children = DomHelper.immediate_children(
+                $("#" + current_node.id), "Activity");
+        current_node_path = $("#" + current_node.id).attr("path");
+        stack.pop();
+
+        // check whether the element has a path tag, if it does then it is
+        // useful for society
+        if (current_node_path) {
+            this.path_ids[current_node_path] = current_node.parents.slice();
+            this.path_ids[current_node_path].push(current_node.id);
+        }
+
+        // add children to the current node to the stack 
+        $.each(current_children, function(index, value) {
+
+            assert($(value).attr("id"));
+            stack.push({
+                "id" : $(value).attr("id"),
+                "parents" : current_node.parents.slice()
+            });
+            stack[stack.length - 1].parents.push(current_node.id);
+        });
+    }
+    console.log(this.path_ids);
+};
 
 /**
  * \brief Called by the boot loader when the page loads
@@ -33,11 +79,12 @@ Router.prototype.route_to_current_activity = function() {
     // parse out the hash url and the public json data
     // If there is no hash in the link then redirect to default page
     var path = this.get_path_from_url(window.location.hash);
+    console.log("path is ", path);
 
     // route to the activity gotten from the hash url, if no public
     // activity exists with the given id then this goes straight to the
     // default public activity
-    this.route_to(path);
+    // this.route_to(path);
 };
 
 /**
@@ -80,6 +127,3 @@ Router.prototype.get_path_from_url = function(url) {
 Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
 }
-/**************************************************************************
- *                          PRIVATE METHODS                               *
- **************************************************************************/

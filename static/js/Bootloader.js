@@ -23,6 +23,8 @@ $(document).ready(function() {
  */
 Bootloader.prototype.boot = function() {
 
+    var time_begin = Date.now();
+
     // the router make it a singleton
     assert(!("router" in jmvc), "A router instance already exists");
     jmvc.router = new Router();
@@ -39,8 +41,13 @@ Bootloader.prototype.boot = function() {
     this.boot_super_activity();
 
     // initialize the router with the current super activity; which should be
-    // safely tucked away in jmvc.super_activity by now.
+    // safely tucked away in jmvc.super_activity by now.  And then route to
+    // the appropriate activity
     jmvc.router.boot();
+    jmvc.router.route_to_current_activity();
+
+    var time_end = Date.now();
+    console.log("Milliseconds taken to boot : ", time_end - time_begin);
 };
 
 /**
@@ -53,7 +60,7 @@ Bootloader.prototype.boot = function() {
  */
 Bootloader.prototype.init_super_activity = function() {
     $("body").wrapInner(`
-        <Activity controller="${jmvc.CONFIG.SUPER_ACTIVITY}">
+        <Activity path="" controller="${jmvc.CONFIG.SUPER_ACTIVITY}">
         </Activity>
     `);
 

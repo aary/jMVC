@@ -70,7 +70,9 @@ function Activity(id_in) {
  *        existance.  This function is called only once in the lifecycle of the
  *        application.
  */
-Activity.prototype.activity_will_boot = function() {};
+Activity.prototype.activity_will_boot = function() { 
+    console.log(this["constructor"].name + ".activity_will_boot()");
+}
 
 /** 
  * \brief Returns a string consisting of the html that is to be embedded into
@@ -78,36 +80,48 @@ Activity.prototype.activity_will_boot = function() {};
  * \return returns the value that is going to be embedded into the activity.
  *         This can also return HTML with child activities.
  */
-Activity.prototype.render = function() {};
+Activity.prototype.render = function() {
+    console.log(this["constructor"].name + ".render()");
+};
 
 /** 
  * \brief Called once and only once when the activity has finished booting.  
  *        This is called after the activity_did_render method.
  */
-Activity.prototype.activity_did_boot = function() {};
+Activity.prototype.activity_did_boot = function() {
+    console.log(this["constructor"].name + ".activity_did_boot()");
+};
 
 /**
  * \brief This function is called right before the activity is going to render
  */
-Activity.prototype.activity_will_appear = function() {};
+Activity.prototype.activity_will_appear = function() {
+    console.log(this["constructor"].name + ".activity_will_appear()");
+};
 
 /**
  * \brief This function is called right before the activity is about to bind
  *        its context with the template
  */
-Activity.prototype.activity_will_bind = function() {};
+Activity.prototype.activity_will_bind = function() {
+    console.log(this["constructor"].name + ".activity_will_bind()");
+};
 
 /**
  * \brief activity_did_render Called right after the activity and all its child
  *        activities have been rendered on the screen.  
  */
-Activity.prototype.activity_did_bind = function() {};
+Activity.prototype.activity_did_bind = function() {
+    console.log(this["constructor"].name + ".activity_did_bind()");
+};
 
 /**
  * \brief activity_did_render Called right after the activity and all its child
  *        activities have been rendered on the screen.  
  */
-Activity.prototype.activity_did_appear = function() {};
+Activity.prototype.activity_did_appear = function() {
+    console.log(this["constructor"].name + ".activity_did_appear()");
+};
 
 /**
  * \brief Called right when the activity goes out of sight of the user window.
@@ -116,7 +130,9 @@ Activity.prototype.activity_did_appear = function() {};
  * when a tab is switched in the browser.  The library hooks into the browser
  * using the browser's API and calls this method in the hook
  */
-Activity.prototype.activity_will_disappear = function() {};
+Activity.prototype.activity_will_disappear = function() {
+    console.log(this["constructor"].name + ".activity_will_disappear()");
+};
 
 /**
  * \brief Called by the bootloader when the application loads in the browser
