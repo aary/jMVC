@@ -213,6 +213,13 @@ Activity.prototype.prepare_render = function() {
  *        to make the activity fade into sight
  */
 Activity.prototype.show_views = function() {
+
+    // show children views first
+    $.each(this.child_activities_without_path, function(index, value) {
+    });
+
+    // then show the child whose path was passed in to the activity
+
     $("#" + this.id).fadeIn(jmvc.CONFIG.FADE_MS);
 };
 
