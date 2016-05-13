@@ -102,7 +102,7 @@ Bootloader.prototype.hide_activities = function(activities_without_ids) {
     $.each(activities_without_ids, function(index, value) {
         $(value).css("display", "none");
     });
-}
+};
 
 /**
  * \brief This sets up all the activities passed in with unique ids
