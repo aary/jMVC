@@ -56,8 +56,9 @@ function Activity(id_in) {
 
     // lists of child activities
     this.child_activities = [];
-    this.child_activities_without_path = [];
-    this.child_activities_with_path = [];
+    // maps from id to activity object
+    this.child_activities_without_path = {}; 
+    this.child_activities_with_path = {};
 
     // contains the text that was rendered by this activity at first, the text
     // is replaced only when the render function returns something different,
@@ -194,6 +195,7 @@ Activity.prototype.render_impl = function() {
     // children.  DFS FTW
     this.register_children();
     this.boot_children();
+    this.register_children_path();
 };
 
 /**
@@ -212,10 +214,11 @@ Activity.prototype.prepare_render = function() {
  * \brief Shows the views for the activity on the screen.  Edit config options
  *        to make the activity fade into sight
  */
-Activity.prototype.show_views = function() {
+Activity.prototype.show_views = function(child_path) {
 
-    // show children views first
+    // show children views first, depth first
     $.each(this.child_activities_without_path, function(index, value) {
+        // value.show_views();
     });
 
     // then show the child whose path was passed in to the activity
@@ -252,23 +255,12 @@ Activity.prototype.register_children = function() {
         });;
     }.bind(this));
 
-    // store the arrays that should be shown when this one is shown, i.e. ones
-    // without a route.  Only one of the activities that are children of this
-    // activity will be shown since the route can only be one thing at a time
-    this.child_activities_without_path = $(activity_array)
-        .filter("Activity:not([path])");
-    this.child_activities_with_path = $(activity_array)
-        .filter("Activity[path]");
 };
 
-/* Helper method to validate the template rendered by the user */
-Activity.prototype.assert_validate_render = function(new_render) {
-    assert(new_render.indexOf("path") === -1, 
-            "Cannot add a route to the DOM dynamically");
-};
-
-/* Helper method that boots all the children activities one by one and sets
- * them to initialized */
+/**
+ * \brief Helper method that boots all the children activities one by one and sets
+ *        them to initialized
+ */
 Activity.prototype.boot_children = function() {
 
     $.each(this.child_activities, function(index, child_activity) {
@@ -280,4 +272,45 @@ Activity.prototype.boot_children = function() {
             child_activity.initialized = true;
         }
     });
+};
+
+/** 
+ * \brief Used to register the children with path ids into a map after they
+ *        have booted
+ */
+Activity.prototype.register_children_path = function() {
+
+    // get the jQuery collection of children activities that are activities
+    // and are only one level deep
+    var activity_array = DomHelper.immediate_children($("#" + this.id), 
+            "Activity");
+    
+    // store the arrays that should be shown when this one is shown, i.e. ones
+    // without a route.  Only one of the activities that are children of this
+    // activity will be shown since the route can only be one thing at a time
+    var child_activities_without_path_arr = $(activity_array)
+        .filter("Activity:not([path])");
+    var child_activities_with_path_arr = $(activity_array)
+        .filter("Activity[path]");
+
+    // make the function to help out and then call it
+    var register_array_in_map = function(array_children, map_children) {
+        $.each(array_children, function(index, value) {
+            var jquery_value = $(value);
+            assert(jquery_value.attr("id"));
+
+            map_children[jquery_value.attr("id")] = 
+                jmvc.activities[jquery_value.attr("id")];
+        });
+    };
+    register_array_in_map(child_activities_without_path_arr, 
+            this.child_activities_without_path);
+    register_array_in_map(child_activities_with_path_arr, 
+            this.child_activities_with_path);
+};
+
+/* Helper method to validate the template rendered by the user */
+Activity.prototype.assert_validate_render = function(new_render) {
+    assert(new_render.indexOf("path") === -1, 
+            "Cannot add a route to the DOM dynamically");
 };

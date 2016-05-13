@@ -82,7 +82,7 @@ Bootloader.prototype.init_activities = function() {
     var activities_without_ids = $("Activity:not([id])");
     this.hide_activities(activities_without_ids);
     this.set_unique_ids(activities_without_ids);
-}
+};
 
 /**
  * \brief Calls the boot method on the super activity that then in turn calls
