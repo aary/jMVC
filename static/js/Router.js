@@ -15,7 +15,7 @@ function Router() {
     // a map from path to list of activity ids that have to go through for
     // the path
     this.path_ids = {};
-}
+};
 
 /** 
  * \brief Boots the router.  Called by the bootloader.
