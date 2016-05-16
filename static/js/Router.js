@@ -36,7 +36,7 @@ Router.prototype.boot = function() {
         "parents" : []
     });
 
-    // DFS
+    // depth first
     while (stack.length) {
 
         // get the current node from the stack and get its children
@@ -64,7 +64,8 @@ Router.prototype.boot = function() {
             stack[stack.length - 1].parents.push(current_node.id);
         });
     }
-    console.log(this.path_ids);
+
+    console.log("Routers path id map is", this.path_ids);
 };
 
 /**
@@ -79,12 +80,13 @@ Router.prototype.route_to_current_activity = function() {
     // parse out the hash url and the public json data
     // If there is no hash in the link then redirect to default page
     var path = this.get_path_from_url(window.location.hash);
-    console.log("path is ", path);
 
     // route to the activity gotten from the hash url, if no public
     // activity exists with the given id then this goes straight to the
     // default public activity
-    // this.route_to(path);
+    this.route_to(path);
+
+    // this.push_current_state();
 };
 
 /**
@@ -100,6 +102,13 @@ Router.prototype.switch_to = function(activity_path) {
     // get the path corresponding to the activity id and route to it
     var path = this.inverted_index_activity_path[activity_path];
     this.route_to(path);
+};
+
+Router.prototype.route_to = function(path) {
+
+    // call the show method on the activity given in the path
+    path.shift();
+    jmvc.activities[0].show(path);
 };
 
 /**************************************************************************
@@ -126,4 +135,4 @@ Router.prototype.get_path_from_url = function(url) {
 };
 Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
-}
+};

@@ -67,7 +67,6 @@ function Activity(id_in) {
     // is replaced only when the render function returns something different,
     // at which point the usual bootstrapping methods are called.
     delete this.current_render;
-    console.log(this.current_render);
 }
 
 /**
@@ -178,7 +177,7 @@ Activity.prototype.boot = function() {
     this.activity_did_boot();
 
     // show the activity, only for testing
-    this.show_views();
+    // this.show();
 };
 
 /**
@@ -266,8 +265,8 @@ Activity.prototype.boot_children = function() {
 
     $.each(this.child_activities, function(index, child_activity) {
 
-        // the EECS 281 in me does not want to do this, it wants to keep a
-        // separate list for better performance but whatevs
+        // I do not want to do this, keep a separate list for better
+        // performance but whatevs
         if (!child_activity.initialized) {
             child_activity.object.boot();
             child_activity.initialized = true;
@@ -297,6 +296,7 @@ Activity.prototype.register_children_path = function() {
 
     // make the function to help out and then call it
     var register_array_in_map = function(array_children, map_children) {
+
         $.each(array_children, function(index, value) {
             var jquery_value = $(value);
             assert(jquery_value.attr("id"));
@@ -316,14 +316,34 @@ Activity.prototype.register_children_path = function() {
  * \brief Shows the views for the activity on the screen.  Edit config options
  *        to make the activity fade into sight
  */
-Activity.prototype.show_views = function(child_path) {
+Activity.prototype.show = function(child_path) {
+
+    // call activity_will_appear on the parent first
+    this.activity_will_appear();
 
     // show children views first, depth first
-    $.each(this.child_activities_without_path, function(index, value) {
-        // value.show_views();
+    $.each(this.child_activities_without_path, function(key, value) {
+        value.show();
     });
 
-    // then show the child whose path was passed in to the activity
+    // then show the child whose path was passed in to the activity, throw an
+    // exception if not
+    console.log("path passed in to activity id " + this.id + " to show is ", 
+            child_path);
+    if (child_path.length) {
+        var activity_to_show_with_path = child_path[0];
+        child_path.shift();
+
+        if (!(activity_to_show_with_path 
+                    in this.child_activities_with_path)) {
+            throw {
+                "error" : "Path passed in does not exist",
+                "code" : 1
+            };
+        }
+        this.child_activities_with_path[activity_to_show_with_path]
+            .show(child_path);
+    }
 
     $("#" + this.id).fadeIn(jmvc.CONFIG.FADE_MS);
 };
