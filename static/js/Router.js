@@ -15,6 +15,9 @@ function Router() {
     // a map from path to list of activity ids that have to go through for
     // the path
     this.path_ids = {};
+
+    // a tree of path entities that is represented by the user in HTML
+    this.path_tree = {};
 };
 
 /** 
@@ -25,47 +28,19 @@ function Router() {
  * member variable in the router
  */
 Router.prototype.boot = function() {
-    
-    // a stack for depth first searching
-    var stack = [];
 
-    // add the initial node and then loop, using stack because thats my only
-    // choice here
-    stack.push({
-        "id" : 0,
-        "parents" : []
-    });
+    // construct the map from path to an array of indices, so that given a
+    // path element the library knows which activities are to be shown to get
+    // to that id
+    this.construct_path_ids_map();
+    console.log("Path id map is ");
+    console.log(this.path_ids);
 
-    // depth first
-    while (stack.length) {
-
-        // get the current node from the stack and get its children
-        var current_node = stack[stack.length - 1];
-        var current_children = DomHelper.immediate_children(
-                $("#" + current_node.id), "Activity");
-        current_node_path = $("#" + current_node.id).attr("path");
-        stack.pop();
-
-        // check whether the element has a path tag, if it does then it is
-        // useful for society
-        if (current_node_path) {
-            this.path_ids[current_node_path] = current_node.parents.slice();
-            this.path_ids[current_node_path].push(current_node.id);
-        }
-
-        // add children to the current node to the stack 
-        $.each(current_children, function(index, value) {
-
-            assert($(value).attr("id"));
-            stack.push({
-                "id" : $(value).attr("id"),
-                "parents" : current_node.parents.slice()
-            });
-            stack[stack.length - 1].parents.push(current_node.id);
-        });
-    }
-
-    console.log("Routers path id map is", this.path_ids);
+    // constructs the path tree for verification, this has been split up from
+    // the function above just to decouple both functions
+    this.construct_path_tree();
+    console.log("Path tree is ");
+    console.log(this.path_tree);
 };
 
 /**
@@ -80,6 +55,9 @@ Router.prototype.route_to_current_activity = function() {
     // parse out the hash url and the public json data
     // If there is no hash in the link then redirect to default page
     var path = this.get_path_from_url(window.location.hash);
+
+    // validates the path with any of the given
+    this.validate_path(path);
 
     // route to the activity gotten from the hash url, if no public
     // activity exists with the given id then this goes straight to the
@@ -135,4 +113,100 @@ Router.prototype.get_path_from_url = function(url) {
 };
 Router.prototype.get_url_from_path = function(path) {
     return "/" + path.join("/");
+};
+
+/* Helper method to create a path to ids map */
+Router.prototype.construct_path_ids_map = function() {
+
+    // a stack for depth first searching
+    var stack = [];
+
+    // add the initial node and then loop, using stack because thats my only
+    // choice here
+    stack.push({
+        "id" : 0,
+        "parents" : []
+    });
+    this.path_ids[""] = 0;
+
+    // depth first
+    while (stack.length) {
+
+        // get the current node from the stack and get its children
+        var current_node = stack[stack.length - 1];
+        var current_children = DomHelper.immediate_children(
+                $("#" + current_node.id), "Activity");
+        var current_node_path = $("#" + current_node.id).attr("path");
+        stack.pop();
+
+        // check whether the element has a path tag, if it does then it is
+        // useful for society
+        if (current_node_path) {
+            this.path_ids[current_node_path] = current_node.parents.slice();
+            this.path_ids[current_node_path].push(current_node.id);
+        }
+
+        // add children to the current node to the stack 
+        $.each(current_children, function(index, value) {
+
+            assert($(value).attr("id"));
+            stack.push({
+                "id" : $(value).attr("id"),
+                "parents" : current_node.parents.slice()
+            });
+            stack[stack.length - 1].parents.push(current_node.id);
+        });
+    }
+};
+
+Router.prototype.construct_path_tree = function() {
+
+    // Get the top level activities and add them to the stack
+    var stack = [];
+    stack.push({
+        "id" : 0,
+        "path" : "",
+        "children" : []
+    });
+    this.path_tree[""] = stack[0];
+
+    while (stack.length) {
+        
+        // get the children for the current node, this gets tricky because
+        // pointers are hidden in this language.  i still cant see why hiding
+        // pointers leads to better code or provides for a better language in
+        // general.  Browsers probably provide some sort of memory API (in C
+        // maybe?) Know nothing about how things work under the hood
+        var current_node = stack[stack.length - 1];
+        var current_children = DomHelper.immediate_children(
+                $("#" + current_node.id), "Activity");
+        stack.pop();
+        console.log("stack is");
+        console.log(stack);
+
+        $.each(current_children, function(index, value) {
+
+            // get the id and append it to the end of the current node
+            var current_child_id = $(value).attr("id");
+            var current_child_path = $(value).attr("path");
+            assert(current_child_id);
+
+            // construct the node to append to the children for the current
+            // node
+            var node_to_append = {
+                "id" : current_child_id,
+                "path" : current_child_path,
+                "children" : []
+            };
+            stack.push(node_to_append);
+        });
+    }
+};
+
+/*
+ * Validates the path passed in the browser and makes sure that there exists a
+ * valid activity combination for it
+ */
+Router.prototype.validate_path = function(path) {
+   
 };
