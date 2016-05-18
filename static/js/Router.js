@@ -241,3 +241,20 @@ Router.prototype.validate_path = function(path) {
         current_node = current_node[value].children;
     });
 };
+
+/* Gets the diff from two path arrays to decide which activities need to be
+ * hidden.
+ *
+ * Returns an object with keys "hide" that represents the activity on which
+ * the hide() method is to be called, a key "show" which represents which
+ * activity the show() method is to be called on with the given path and a key
+ * "path" which represents the path that is to be passed into the show()
+ * method.
+ */
+Router.prototype.get_path_diff = function(current_path, new_path) {
+
+    // iterate through the current path and at the first difference the new
+    // one needs to be shown and the current one needs to be discarded,
+    // <algorithm> would be marvelous here
+    
+};

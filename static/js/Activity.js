@@ -267,7 +267,8 @@ Activity.prototype.boot_children = function() {
 
         // I do not want to do this, keep a separate list for better
         // performance but whatevs
-        if (!child_activity.initialized) {
+        assert("initialized" in child_activity);
+        if (child_activity.initialized === false) {
             child_activity.object.boot();
             child_activity.initialized = true;
         }
