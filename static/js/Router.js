@@ -10,6 +10,10 @@
  * this purpose)
  */
 
+/**
+ * \class Router
+ * \brief Class that provides routing functionality
+ */
 function Router() {
 
     // a map from path to list of activity ids that have to go through for
@@ -17,8 +21,18 @@ function Router() {
     this.path_ids = {};
 
     // a tree of path entities that is represented by the user in HTML
-    this.path_tree = {};
+    this.path_prefix_tree = {};
 };
+
+/**
+ * \class JmvcExceptionRouter
+ * \brief Exception class for errors in the Router's internal code
+ */
+function JmvcExceptionRouter(message_in) {
+    JmvcException.call(this, 100, message_in);
+};
+JmvcExceptionRouter.prototype = new JmvcException();
+JmvcExceptionRouter.constructor = JmvcExceptionRouter;
 
 /** 
  * \brief Boots the router.  Called by the bootloader.
@@ -38,9 +52,9 @@ Router.prototype.boot = function() {
 
     // constructs the path tree for verification, this has been split up from
     // the function above just to decouple both functions
-    this.construct_path_tree();
+    this.construct_path_prefix_tree();
     console.log("Path tree is ");
-    console.log(this.path_tree);
+    console.log(JSON.stringify(this.path_prefix_tree, null, 4));
 };
 
 /**
@@ -52,19 +66,25 @@ Router.prototype.boot = function() {
  */
 Router.prototype.route_to_current_activity = function() {
     
-    // parse out the hash url and the public json data
-    // If there is no hash in the link then redirect to default page
-    var path = this.get_path_from_url(window.location.hash);
+    try {
 
-    // validates the path with any of the given
-    this.validate_path(path);
+        // parse out the hash url and the public json data If there is no hash in
+        // the link then redirect to default page
+        var path = this.get_path_from_url(window.location.hash);
 
-    // route to the activity gotten from the hash url, if no public
-    // activity exists with the given id then this goes straight to the
-    // default public activity
-    this.route_to(path);
+        // validates the path with any of the given
+        this.validate_path(path);
 
-    // this.push_current_state();
+        // route to the activity gotten from the hash url, if no public
+        // activity exists with the given id then this goes straight to the
+        // default public activity
+        this.route_to(path);
+
+        // this.push_current_state();
+
+    } catch (err) {
+        throw err;
+    }
 };
 
 /**
@@ -159,16 +179,15 @@ Router.prototype.construct_path_ids_map = function() {
     }
 };
 
-Router.prototype.construct_path_tree = function() {
+Router.prototype.construct_path_prefix_tree = function() {
 
     // Get the top level activities and add them to the stack
     var stack = [];
     stack.push({
         "id" : 0,
-        "path" : "",
-        "children" : []
+        "children" : {} 
     });
-    this.path_tree[""] = stack[0];
+    this.path_prefix_tree[""] = stack[0];
 
     while (stack.length) {
         
@@ -181,8 +200,6 @@ Router.prototype.construct_path_tree = function() {
         var current_children = DomHelper.immediate_children(
                 $("#" + current_node.id), "Activity");
         stack.pop();
-        console.log("stack is");
-        console.log(stack);
 
         $.each(current_children, function(index, value) {
 
@@ -195,11 +212,12 @@ Router.prototype.construct_path_tree = function() {
             // node
             var node_to_append = {
                 "id" : current_child_id,
-                "path" : current_child_path,
-                "children" : []
+                "children" : {},
             };
+            assert(!(current_child_path in current_node.children));
+            current_node.children[current_child_path] = node_to_append;
             stack.push(node_to_append);
-        });
+        }); 
     }
 };
 
@@ -208,5 +226,15 @@ Router.prototype.construct_path_tree = function() {
  * valid activity combination for it
  */
 Router.prototype.validate_path = function(path) {
-   
+    
+    // follow the prefix tree to see if there is a valid path if we follow
+    // the nodes in the path array
+    var current_node = this.path_prefix_tree;
+    $.each(path, function(index, value) {
+
+        if (!(value in current_node)) {
+            throw new JmvcExceptionRouter("Path does not exist");
+        }
+        current_node = current_node[value].children;
+    });
 };
