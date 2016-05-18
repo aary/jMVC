@@ -22,6 +22,9 @@ function Router() {
 
     // a tree of path entities that is represented by the user in HTML
     this.path_prefix_tree = {};
+
+    // the current array that is being shown on the screen
+    this.current_path = [];
 };
 
 /**
@@ -66,25 +69,14 @@ Router.prototype.boot = function() {
  */
 Router.prototype.route_to_current_activity = function() {
     
-    try {
+    // parse out the hash url and the public json data If there is no hash in
+    // the link then redirect to default page
+    var path = this.get_path_from_url(window.location.hash);
 
-        // parse out the hash url and the public json data If there is no hash in
-        // the link then redirect to default page
-        var path = this.get_path_from_url(window.location.hash);
-
-        // validates the path with any of the given
-        this.validate_path(path);
-
-        // route to the activity gotten from the hash url, if no public
-        // activity exists with the given id then this goes straight to the
-        // default public activity
-        this.route_to(path);
-
-        // this.push_current_state();
-
-    } catch (err) {
-        throw err;
-    }
+    // route to the activity gotten from the hash url, if no public
+    // activity exists with the given id then this goes straight to the
+    // default public activity
+    this.route_to(path);
 };
 
 /**
@@ -104,9 +96,20 @@ Router.prototype.switch_to = function(activity_path) {
 
 Router.prototype.route_to = function(path) {
 
-    // call the show method on the activity given in the path
-    path.shift();
-    jmvc.activities[0].show(path);
+    try {
+        // validates the path with any of the given
+        this.validate_path(path);
+
+        // call the show method on the activity given in the path
+        path.shift();
+        jmvc.activities[0].show(path);
+
+        // make the current path equal to path
+        this.current_path = path;
+
+    } catch (error) {
+        throw error;
+    }
 };
 
 /**************************************************************************
