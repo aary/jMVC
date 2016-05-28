@@ -98,16 +98,18 @@ Router.prototype.route_to = function(path) {
 
     try {
         // validates the path with any of the given
-        this.validate_path(path);
+        this.validate_path_against_prefix_tree(path);
 
         // call the show method on the activity given in the path
-        path.shift();
-        jmvc.activities[0].show(path);
+        var path_of_ids = this.path_ids[path[path.length - 1]]
+        path_of_ids.shift();
+        jmvc.activities[0].show(path_of_ids);
 
         // make the current path equal to path
         this.current_path = path;
 
     } catch (error) {
+        alert("Path error!");
         throw error;
     }
 };
@@ -228,7 +230,7 @@ Router.prototype.construct_path_prefix_tree = function() {
  * Validates the path passed in the browser and makes sure that there exists a
  * valid activity combination for it
  */
-Router.prototype.validate_path = function(path) {
+Router.prototype.validate_path_against_prefix_tree = function(path) {
     
     // follow the prefix tree to see if there is a valid path if we follow
     // the nodes in the path array

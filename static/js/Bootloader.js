@@ -37,7 +37,7 @@ Bootloader.prototype.boot = function() {
     // unique id and hide them
     this.init_activities();
 
-    // boot the main activity
+    // boot the main activity which boots its child activities, see Activity.js
     this.boot_super_activity();
 
     // initialize the router with the current super activity; which should be
@@ -100,6 +100,7 @@ Bootloader.prototype.hide_activities = function(activities_without_ids) {
     assert(activities_without_ids !== undefined);
 
     $.each(activities_without_ids, function(index, value) {
+        assert($(value).attr("id") === undefined);
         $(value).css("display", "none");
     });
 };

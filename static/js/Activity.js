@@ -47,7 +47,7 @@ function Activity(id_in) {
     // exactly to the id tag of the div that contains the controller's
     // frontend in the html
     this.id = id_in;
-    if (this.id) {
+    if (this.id) { // 0 and undefined work here
         assert($("#" + this.id).length,
                 "Id assigned to activity must exist");
     }
@@ -322,28 +322,30 @@ Activity.prototype.show = function(child_path) {
     // call activity_will_appear on the parent first
     this.activity_will_appear();
 
-    // show children views first, depth first
+    // show children views first, depth first, doesnt matter if these
+    // activites are shown because they will not be shown until this one is
     $.each(this.child_activities_without_path, function(key, value) {
         value.show();
     });
 
-    // then show the child whose path was passed in to the activity, throw an
-    // exception if not
     console.log("path passed in to activity id " + this.id + " to show is ", 
             child_path);
-    if (child_path.length) {
-        var activity_to_show_with_path = child_path[0];
-        child_path.shift();
 
-        if (!(activity_to_show_with_path 
-                    in this.child_activities_with_path)) {
-            throw {
-                "error" : "Path passed in does not exist",
-                "code" : 1
-            };
+    // check if child_path isnt undefined becasue this method is called above
+    // without an argument for all children that do not have a path attribute
+    if (child_path) {
+        if (child_path.length) {
+            var activity_to_show_with_path = child_path[0];
+            child_path.shift();
+
+            // assert that the activity id passed in does exist, assert and
+            // dont throw an exception because only the router calls this
+            // method.
+            assert(activity_to_show_with_path 
+                    in this.child_activities_with_path);
+            this.child_activities_with_path[activity_to_show_with_path]
+                .show(child_path);
         }
-        this.child_activities_with_path[activity_to_show_with_path]
-            .show(child_path);
     }
 
     $("#" + this.id).fadeIn(jmvc.CONFIG.FADE_MS);
